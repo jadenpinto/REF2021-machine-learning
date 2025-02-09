@@ -1,14 +1,11 @@
 import os
 import pandas as pd
 
-from utils.constants import RESULTS_DATASET
-
+from utils.constants import DATASETS_DIR, REF2021_EXPORTED_DIR, CS_UOA_RESULTS
 
 def clean_results_dataset():
     # Define the Excel file name
-    # '../' + RESULTS_DATASET
-    # file_path = os.path.join(os.path.dirname(__file__), '..', 'datasets', 'REF2021', 'CS_UoA_Results.xlsx') -> safer
-    results_dataset_path = os.path.join(os.path.dirname(__file__), '..', RESULTS_DATASET)
+    results_dataset_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, REF2021_EXPORTED_DIR, CS_UOA_RESULTS)
 
     try:
         # Load the Excel file, skipping the first 6 lines
