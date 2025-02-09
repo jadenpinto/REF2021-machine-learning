@@ -1,10 +1,13 @@
-def log_data_frame(df):
+def log_dataframe(df):
     # Display the first few rows to verify the result
-    print(df.head().to_string())
+    print(f"First 5 rows of the DF:")
+    print(f"{df.head().to_string()}\n")
 
     # Display the shape of the DataFrame
-    print("\nNumber of rows and columns:", df.shape)
+    row_count, col_count = df.shape
+    print(f"Number of rows={row_count}")
+    print(f"Number of columns={col_count}\n")
 
-    # Columns
-    print(df.columns)
-
+    # Column Names
+    print(f"Column Names:")
+    print(f"{df.columns.values.tolist()}\n")
