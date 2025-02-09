@@ -7,3 +7,20 @@ REF2021_CLEANED_DIR = "REF2021_Cleaned"
 CS_UOA_RESULTS =  "CS_UoA_Results.xlsx"
 OUTPUTS_METADATA = "All_Outputs_Metadata.xlsx"
 CS_OUTPUTS_METADATA = "CS_Outputs_Metadata.csv"
+
+# Output Metadata
+output_type = {
+    "A": "Authored book",
+    "B": "Edited book",
+    "C": "Chapter in book",
+    "D": "Journal article",
+    "E": "Conference contribution", # Published in conference proceedings
+    "F": "Patent",
+    "G": "Software",
+    "J": "Composition",
+    "L": "Artefact",
+    "M": "Exhibition",
+    "N": "Research report for external body",
+    "Q": "Digital or visual media",
+    "U": "Working paper"
+}
