@@ -2,7 +2,7 @@ import os
 import pandas as pd
 
 from utils.constants import DATASETS_DIR, IMPACT_FACTOR_EXPORTED_DIR, SCIMAGO_JOURNAL_RANK
-from utils.dataframe import log_dataframe
+from utils.dataframe import log_dataframe, delete_rows_by_values
 from openpyxl import load_workbook
 
 def clean_sjr_dataset():
@@ -58,10 +58,21 @@ def log_df_issn_lengths(sjr_df):
     ISSN length is 18, if the field contains 2 ISSN values => Normalise to 1NF
     """
 
+def handle_sjr_issn(sjr_df):
+    sjr_df = drop_null_issn(sjr_df)
+    # sjr_df = normalise_multiple_issn(sjr_df)
+    return sjr_df
+
+def drop_null_issn(sjr_df):
+    sjr_df = delete_rows_by_values(sjr_df, "Issn", ["-"])
+    return sjr_df
 
 sjr_df = clean_sjr_dataset()
 count_issn_lengths(sjr_df)
-log_df_issn_lengths(sjr_df)
+#log_df_issn_lengths(sjr_df)
+sjr_df = handle_sjr_issn(sjr_df)
+print("after:")
+count_issn_lengths(sjr_df)
 
 """
 Example Output:

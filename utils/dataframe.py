@@ -11,3 +11,6 @@ def log_dataframe(df):
     # Column Names
     print(f"Column Names:")
     print(f"{df.columns.values.tolist()}\n")
+
+def delete_rows_by_values(df, col, values):
+    return df[~df[col].isin(values)]
