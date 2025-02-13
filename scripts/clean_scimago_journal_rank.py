@@ -60,18 +60,25 @@ def log_df_issn_lengths(sjr_df):
 
 def handle_sjr_issn(sjr_df):
     sjr_df = drop_null_issn(sjr_df)
-    # sjr_df = normalise_multiple_issn(sjr_df)
+    sjr_df = convert_to_1nf(sjr_df)
     return sjr_df
 
 def drop_null_issn(sjr_df):
     sjr_df = delete_rows_by_values(sjr_df, "Issn", ["-"])
     return sjr_df
 
+def convert_to_1nf(sjr_df):
+    sjr_df = sjr_df.assign(
+        Issn=sjr_df['Issn'].str.split(', ')
+    ).explode('Issn')
+
+    return sjr_df
+
 sjr_df = clean_sjr_dataset()
 count_issn_lengths(sjr_df)
-#log_df_issn_lengths(sjr_df)
+log_df_issn_lengths(sjr_df)
 sjr_df = handle_sjr_issn(sjr_df)
-print("after:")
+print("Final:")
 count_issn_lengths(sjr_df)
 
 """
