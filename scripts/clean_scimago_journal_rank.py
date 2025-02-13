@@ -3,30 +3,65 @@ import pandas as pd
 
 from utils.constants import DATASETS_DIR, IMPACT_FACTOR_EXPORTED_DIR, SCIMAGO_JOURNAL_RANK
 from utils.dataframe import log_dataframe
-
+from openpyxl import load_workbook
 
 def clean_sjr_dataset():
     # Path to SCImago journal rank file
     sjr_dataset_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, IMPACT_FACTOR_EXPORTED_DIR, SCIMAGO_JOURNAL_RANK)
 
     try:
-        x = 1
-        # Load the Excel file, skipping the first 4 lines -> 4th line will be used as the header
-        # TODO sjr_df = pd.read_excel(sjr_dataset_path)
+        sjr_df = pd.read_csv(
+            sjr_dataset_path,
+            delimiter=';'
+        )
 
-        # load excel, drop all but c1
+        sjr_columns = ['Rank', 'Title', 'Issn', 'SJR']
+        sjr_df = sjr_df[sjr_columns]
 
-        # log_dataframe(sjr_df)
+        log_dataframe(sjr_df)
 
-        #return sjr_df
+        return sjr_df
 
     except FileNotFoundError:
         print("File not found. Please make sure the file name and path are correct.")
     except Exception as e:
         print("An error occurred while reading the file:", str(e))
 
-clean_sjr_dataset()
 
+def count_issn_lengths(sjr_df):
+    issn_lengths = sjr_df['Issn'].astype(str).apply(len)
+    unique_issn_lengths = sorted(issn_lengths.unique())
+
+    print(f"Possible Lengths of ISSNs in SJR dataframe={unique_issn_lengths}") # 1, 8, 18
+
+def log_df_issn_lengths(sjr_df):
+    # Create a temporary column to store the length of each Issn
+    sjr_df['Issn_length'] = sjr_df['Issn'].astype(str).apply(len)
+
+    # Filter DataFrame to include only rows where Issn_length is 1
+    single_char_issn = sjr_df[sjr_df['Issn_length'] == 1]
+    print("Logging records in DF where ISSN length is 1:")
+    log_dataframe(single_char_issn)
+    """
+    28 rows
+    Issn = "-" (in all 28 records)
+    These journal do not have an Issn => Drop records where Issn = "-"
+    """
+
+    # Filter DataFrame to include only rows where Issn_length is 18
+    eighteen_char_issn = sjr_df[sjr_df['Issn_length'] == 18]
+    print("Logging records in DF where ISSN length is 18:")
+    log_dataframe(eighteen_char_issn)
+    """
+    17740 rows
+    Example: Issn = "15424863, 00079235"
+    ISSN length is 18, if the field contains 2 ISSN values => Normalise to 1NF
+    """
+
+
+sjr_df = clean_sjr_dataset()
+count_issn_lengths(sjr_df)
+log_df_issn_lengths(sjr_df)
 
 """
 Example Output:
@@ -49,3 +84,11 @@ Rank;Sourceid;Title;Type;Issn;
 remaining fields:
 SJR;SJR Best Quartile;H index;Total Docs. (2023);Total Docs. (3years);Total Refs.;Total Cites (3years);Citable Docs. (3years);Cites / Doc. (2years);Ref. / Doc.;%Female;Overton;SDG;Country;Region;Publisher;Coverage;Categories;Areas
 """
+
+# TODO
+# Function to handle issns what are not 4. So, drop all "-"s, and
+# normalise it where it contains 2 ISSNs. Split it into two records
+# write this as CSV -> can be a util function
+# Another file to join
+
+# do some initial data investigation -> can plot things etc (in first file)
