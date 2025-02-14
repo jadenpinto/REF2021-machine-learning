@@ -10,6 +10,7 @@ CS_UOA_RESULTS =  "CS_UoA_Results.xlsx"
 OUTPUTS_METADATA = "All_Outputs_Metadata.xlsx"
 CS_OUTPUTS_METADATA = "CS_Outputs_Metadata.csv"
 SCIMAGO_JOURNAL_RANK = "SCImago_Journal_Rank.csv"
+SCIMAGO_JOURNAL_RANK_CLEANED = "SJR_Impact_Factor.csv"
 
 # Output Metadata
 output_type = {

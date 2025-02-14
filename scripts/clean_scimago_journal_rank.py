@@ -1,9 +1,9 @@
 import os
 import pandas as pd
 
-from utils.constants import DATASETS_DIR, IMPACT_FACTOR_EXPORTED_DIR, SCIMAGO_JOURNAL_RANK
+from utils.constants import DATASETS_DIR, IMPACT_FACTOR_EXPORTED_DIR, SCIMAGO_JOURNAL_RANK, IMPACT_FACTOR_CLEANED_DIR, \
+    SCIMAGO_JOURNAL_RANK_CLEANED
 from utils.dataframe import log_dataframe, delete_rows_by_values
-from openpyxl import load_workbook
 
 def clean_sjr_dataset():
     # Path to SCImago journal rank file
@@ -12,7 +12,8 @@ def clean_sjr_dataset():
     try:
         sjr_df = pd.read_csv(
             sjr_dataset_path,
-            delimiter=';'
+            delimiter=';',
+            decimal=","
         )
 
         sjr_columns = ['Rank', 'Title', 'Issn', 'SJR']
@@ -61,6 +62,7 @@ def log_df_issn_lengths(sjr_df):
 def handle_sjr_issn(sjr_df):
     sjr_df = drop_null_issn(sjr_df)
     sjr_df = convert_to_1nf(sjr_df)
+    sjr_df = add_issn_hyphen(sjr_df)
     return sjr_df
 
 def drop_null_issn(sjr_df):
@@ -74,12 +76,27 @@ def convert_to_1nf(sjr_df):
 
     return sjr_df
 
-sjr_df = clean_sjr_dataset()
+def add_issn_hyphen(sjr_df):
+    sjr_df['Issn'] = sjr_df['Issn'].apply(
+        lambda issn_str: issn_str[:4] + '-' + issn_str[4:]
+    )
+
+    return sjr_df
+
+def write_cleaned_impact_factor(sjr_df):
+    cleaned_impact_factor_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, IMPACT_FACTOR_CLEANED_DIR,
+                                           SCIMAGO_JOURNAL_RANK_CLEANED)
+
+    sjr_df.to_csv(cleaned_impact_factor_path, index=False)
+
+
+sjr_df = clean_sjr_dataset() # NaN Count: SJR = 210, Rest = 0
 count_issn_lengths(sjr_df)
 log_df_issn_lengths(sjr_df)
 sjr_df = handle_sjr_issn(sjr_df)
-print("Final:")
 count_issn_lengths(sjr_df)
+# Write:
+write_cleaned_impact_factor(sjr_df)
 
 """
 Example Output:
