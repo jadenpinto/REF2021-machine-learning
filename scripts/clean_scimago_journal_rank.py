@@ -99,34 +99,6 @@ count_issn_lengths(sjr_df)
 # write_cleaned_impact_factor(sjr_df)
 
 
-# Join -> maybe later move to another file
-cleaned_cs_outputs_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, REF2021_CLEANED_DIR,
-                                       CS_OUTPUTS_METADATA)
-cs_outputs_df = pd.read_csv(cleaned_cs_outputs_path)
-journal_article_metadata = cs_outputs_df[cs_outputs_df['Output type'] == "D"]
-
-cleaned_impact_factor_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, IMPACT_FACTOR_CLEANED_DIR,
-                                           SCIMAGO_JOURNAL_RANK_CLEANED)
-sjr_impact_df = pd.read_csv(cleaned_impact_factor_path)
-
-print("-----------------------------JOIN:-------------------------------------------------------------------")
-log_dataframe(journal_article_metadata)
-log_dataframe(sjr_impact_df)
-
-# journal_article_metadata [ISSN] join sjr_impact_df ['Issn']
-print("joining...")
-joined_df = pd.merge(
-    journal_article_metadata, sjr_impact_df, left_on='ISSN', right_on='Issn', how='left'
-)
-log_dataframe(joined_df)
-
-# Failed joins: Issn = None
-print(joined_df.isna().sum()) # Only 313
-# But here SJR is 317, explore why -> Issn is valid, but issn_length is None.
-# Perhaps the original DF had invalid SJRs
-# [I think this is it, quite a few, check which ones, and handle them - maybe hardcode if online]
-
-
 """
 Example Output:
 https://results2021.ref.ac.uk/outputs/1b7d4ae7-486f-455a-bf27-d490635acef2?page=1
