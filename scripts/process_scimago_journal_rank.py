@@ -31,14 +31,15 @@ def filter_sjr_columns(sjr_df):
     sjr_df = sjr_df[sjr_columns]
     return sjr_df
 
-
-def count_issn_lengths(sjr_df):
+def log_issn_lengths(sjr_df):
     issn_lengths = sjr_df['Issn'].astype(str).apply(len)
     unique_issn_lengths = sorted(issn_lengths.unique())
 
-    print(f"Possible Lengths of ISSNs in SJR dataframe={unique_issn_lengths}") # 1, 8, 18
+    print(f"Possible Lengths of ISSNs in SJR dataframe={unique_issn_lengths}")
 
-def log_df_issn_lengths(sjr_df):
+def log_records_issn_len_not_eight(sjr_df):
+    # Log records where the ISSN length is not eight i.e. ISSN length is 1 or 18
+
     # Create a temporary column to store the length of each Issn
     sjr_df['Issn_length'] = sjr_df['Issn'].astype(str).apply(len)
 
@@ -62,24 +63,29 @@ def log_df_issn_lengths(sjr_df):
     ISSN length is 18, if the field contains 2 ISSN values => Normalise to 1NF
     """
 
+    # Drop temporary column
+    sjr_df.drop(
+        columns=['Issn_length'], inplace = True
+    )
+
 def handle_sjr_issn(sjr_df):
     sjr_df = drop_null_issn(sjr_df)
-    sjr_df = convert_to_1nf(sjr_df)
-    sjr_df = add_issn_hyphen(sjr_df)
+    sjr_df = normalise_to_1nf(sjr_df)
+    sjr_df = add_hyphen_issn(sjr_df)
     return sjr_df
 
 def drop_null_issn(sjr_df):
     sjr_df = delete_rows_by_values(sjr_df, "Issn", ["-"])
     return sjr_df
 
-def convert_to_1nf(sjr_df):
+def normalise_to_1nf(sjr_df):
     sjr_df = sjr_df.assign(
         Issn=sjr_df['Issn'].str.split(', ')
     ).explode('Issn')
 
     return sjr_df
 
-def add_issn_hyphen(sjr_df):
+def add_hyphen_issn(sjr_df):
     sjr_df['Issn'] = sjr_df['Issn'].apply(
         lambda issn_str: issn_str[:4] + '-' + issn_str[4:]
     )
@@ -95,13 +101,15 @@ def write_cleaned_impact_factor(sjr_df):
 def process_sjr_impact_factor():
     sjr_df = read_sjr_dataset() # NaN Count: SJR = 210, Rest = 0
     sjr_df = filter_sjr_columns(sjr_df)
-    count_issn_lengths(sjr_df)
-    log_df_issn_lengths(sjr_df)
+
+    log_issn_lengths(sjr_df)                       # 1, 8, 18
+    log_records_issn_len_not_eight(sjr_df)         # if 1, Issn = "-". If 18, Issn includes 2 comma seperated ISSNs
+
     sjr_df = handle_sjr_issn(sjr_df)
-    count_issn_lengths(sjr_df)
+    log_issn_lengths(sjr_df)                       # 9. Example: 1542-4863
+
     # Write:
     # write_cleaned_impact_factor(sjr_df)
 
 process_sjr_impact_factor()
-
 # TODO Initial data investigation -> can plot things etc (in first file)
