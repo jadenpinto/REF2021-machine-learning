@@ -112,4 +112,3 @@ def process_sjr_impact_factor():
     write_processed_sjr_csv(sjr_df)
 
 process_sjr_impact_factor()
-# TODO Initial data investigation -> can plot things etc (in first file)

@@ -1,7 +1,7 @@
 # Directories
 DATASETS_DIR = "datasets"
 REF2021_EXPORTED_DIR = "REF2021_Exported"
-REF2021_CLEANED_DIR = "REF2021_Cleaned"
+PROCESSED_REF2021_DIR = "REF2021_Cleaned"
 EXPORTED_IMPACT_FACTOR_DIR = "Journal_Impact_Factor_Exported"
 PROCESSED_IMPACT_FACTOR_DIR = "Journal_Impact_Factor_Processed"
 

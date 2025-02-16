@@ -1,12 +1,12 @@
 import os
 import pandas as pd
 
-from utils.constants import (DATASETS_DIR, PROCESSED_IMPACT_FACTOR_DIR, PROCESSED_SCIMAGO_JOURNAL_RANK, REF2021_CLEANED_DIR,
+from utils.constants import (DATASETS_DIR, PROCESSED_IMPACT_FACTOR_DIR, PROCESSED_SCIMAGO_JOURNAL_RANK, PROCESSED_REF2021_DIR,
                              CS_OUTPUTS_METADATA)
 from utils.dataframe import log_dataframe
 
 def get_cs_outputs_metadata():
-    cleaned_cs_outputs_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, REF2021_CLEANED_DIR,
+    cleaned_cs_outputs_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, PROCESSED_REF2021_DIR,
                                            CS_OUTPUTS_METADATA)
 
     cs_outputs_df = pd.read_csv(cleaned_cs_outputs_path)
