@@ -1,13 +1,13 @@
 import os
 import pandas as pd
 
-from utils.constants import DATASETS_DIR, IMPACT_FACTOR_EXPORTED_DIR, SCIMAGO_JOURNAL_RANK, IMPACT_FACTOR_CLEANED_DIR, \
-    SCIMAGO_JOURNAL_RANK_CLEANED, REF2021_CLEANED_DIR, CS_OUTPUTS_METADATA
+from utils.constants import DATASETS_DIR, EXPORTED_IMPACT_FACTOR_DIR, EXPORTED_SCIMAGO_JOURNAL_RANK, PROCESSED_IMPACT_FACTOR_DIR, \
+    PROCESSED_SCIMAGO_JOURNAL_RANK
 from utils.dataframe import log_dataframe, delete_rows_by_values
 
 def read_sjr_dataset():
     # Path to SCImago journal rank file
-    sjr_dataset_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, IMPACT_FACTOR_EXPORTED_DIR, SCIMAGO_JOURNAL_RANK)
+    sjr_dataset_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, EXPORTED_IMPACT_FACTOR_DIR, EXPORTED_SCIMAGO_JOURNAL_RANK)
 
     try:
         sjr_df = pd.read_csv(
@@ -92,11 +92,11 @@ def add_hyphen_issn(sjr_df):
 
     return sjr_df
 
-def write_cleaned_impact_factor(sjr_df):
-    cleaned_impact_factor_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, IMPACT_FACTOR_CLEANED_DIR,
-                                           SCIMAGO_JOURNAL_RANK_CLEANED)
+def write_processed_sjr_csv(sjr_df):
+    processed_sjr_csv_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, PROCESSED_IMPACT_FACTOR_DIR,
+                                           PROCESSED_SCIMAGO_JOURNAL_RANK)
 
-    sjr_df.to_csv(cleaned_impact_factor_path, index=False)
+    sjr_df.to_csv(processed_sjr_csv_path, index=False)
 
 def process_sjr_impact_factor():
     sjr_df = read_sjr_dataset() # NaN Count: SJR = 210, Rest = 0
@@ -109,7 +109,7 @@ def process_sjr_impact_factor():
     log_issn_lengths(sjr_df)                       # 9. Example: 1542-4863
 
     # Write:
-    # write_cleaned_impact_factor(sjr_df)
+    write_processed_sjr_csv(sjr_df)
 
 process_sjr_impact_factor()
 # TODO Initial data investigation -> can plot things etc (in first file)

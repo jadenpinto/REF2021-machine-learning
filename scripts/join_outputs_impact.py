@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-from utils.constants import (DATASETS_DIR, IMPACT_FACTOR_CLEANED_DIR, SCIMAGO_JOURNAL_RANK_CLEANED, REF2021_CLEANED_DIR,
+from utils.constants import (DATASETS_DIR, PROCESSED_IMPACT_FACTOR_DIR, PROCESSED_SCIMAGO_JOURNAL_RANK, REF2021_CLEANED_DIR,
                              CS_OUTPUTS_METADATA)
 from utils.dataframe import log_dataframe
 
@@ -17,10 +17,10 @@ def get_journal_article_metadata(cs_outputs_df):
     return journal_article_metadata
 
 def get_sjr_impact_factor_df():
-    cleaned_impact_factor_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, IMPACT_FACTOR_CLEANED_DIR,
-                                           SCIMAGO_JOURNAL_RANK_CLEANED)
+    processed_sjr_csv_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, PROCESSED_IMPACT_FACTOR_DIR,
+                                           PROCESSED_SCIMAGO_JOURNAL_RANK)
 
-    sjr_impact_df = pd.read_csv(cleaned_impact_factor_path)
+    sjr_impact_df = pd.read_csv(processed_sjr_csv_path)
     return sjr_impact_df
 
 def join_journal_article_metadata_with_sjr():
