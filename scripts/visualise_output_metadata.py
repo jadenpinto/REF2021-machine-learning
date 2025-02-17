@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 
 from utils.constants import DATASETS_DIR, PROCESSED_REF2021_DIR, CS_OUTPUTS_METADATA, output_type
@@ -44,11 +45,80 @@ def plot_output_types(cs_outputs_metadata):
     )
     plt.show()
 
+def count_journals(cs_outputs_metadata):
+    journal_names = cs_outputs_metadata['Volume title'].unique()
+    print(f"The total number of journals in CS outputs metadata = {journal_names.size}") # 2734
+
+def group_output_type(output_type_key):
+    type_of_output = output_type[output_type_key]
+    if (type_of_output == "Journal article") or (type_of_output == "Conference contribution"):
+        return type_of_output
+    else:
+        return "Other"
+
+def plot_university_pivot_data(pivot_data):
+    # Sort universities by total output count
+    pivot_data['Total'] = pivot_data.sum(axis=1)
+    pivot_data = pivot_data.sort_values('Total', ascending=True)
+    pivot_data = pivot_data.drop('Total', axis=1)
+
+    # Create the stacked bar chart
+    fig, ax = plt.subplots(figsize=(12, max(8, len(pivot_data) * 0.4)))  # Adjust height based on number of universities
+
+    # Create stacked bars
+    bottom = np.zeros(len(pivot_data))
+    for category in ['Journal article', 'Conference contribution', 'Other']:
+        if category in pivot_data.columns:
+            values = pivot_data[category]
+            ax.barh(pivot_data.index, values, left=bottom, label=category)
+            bottom += values
+
+    ax.set_title('Output Distribution by University')
+    ax.set_xlabel('Number of Outputs')
+    ax.set_ylabel('University')
+    # Add legend
+    ax.legend(title="Output Types", bbox_to_anchor=(1.05, 1), loc='upper left')
+
+    # Add total count labels at the end of each bar
+    for i in range(len(pivot_data)):
+        total = sum(pivot_data.iloc[i])
+        ax.text(total, i, f' Total: {total}', va='center')
+
+    plt.tight_layout() # Fix layout - prevent label cutoff
+    plt.show()
+    plt.close()
+
+def get_university_pivot_data(cs_outputs_metadata):
+    # Create a new column with grouped output types
+    cs_outputs_metadata['Output Category'] = cs_outputs_metadata['Output type'].apply(group_output_type)
+
+    # Create pivot table for the stacked bar chart
+    pivot_data = pd.pivot_table(
+        cs_outputs_metadata,
+        values='Output type',
+        index='Institution name',
+        columns='Output Category',
+        aggfunc='count',
+        fill_value=0
+    )
+    pivot_data['Total'] = pivot_data.sum(axis=1) # Total outputs for each university
+    return pivot_data
+
+def plot_university_output_distribution(cs_outputs_metadata):
+    pivot_data = get_university_pivot_data(cs_outputs_metadata)
+
+    university_count = len(pivot_data) // 2
+
+    top_half_universities_by_output_counts = pivot_data.nlargest(university_count, 'Total')
+    bottom_half_universities_by_output_counts = pivot_data.nsmallest(university_count, 'Total')
+
+    plot_university_pivot_data(top_half_universities_by_output_counts)
+    plot_university_pivot_data(bottom_half_universities_by_output_counts)
+
+
 cs_outputs_metadata = get_outputs_metadata()
 plot_output_types(cs_outputs_metadata)
+count_journals(cs_outputs_metadata)
+plot_university_output_distribution(cs_outputs_metadata) # stacked bar chart
 
-# TODO Initial data investigation -> can plot things etc (in first file)
-# Visualise CS outputs
-# Need one how maybe bar chart for every uni where it's split into composition of output types
-# (stacked bar chart)
-
+# TODO Unis with all outputs = research articles
