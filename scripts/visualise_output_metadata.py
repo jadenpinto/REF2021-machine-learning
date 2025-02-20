@@ -3,12 +3,12 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from utils.constants import DATASETS_DIR, PROCESSED_REF2021_DIR, CS_OUTPUTS_METADATA, output_type
+from utils.constants import DATASETS_DIR, PROCESSED_DIR, CS_OUTPUTS_METADATA, output_type
 from utils.dataframe import log_dataframe
 
 
 def get_outputs_metadata():
-    processed_cs_outputs_metadata_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, PROCESSED_REF2021_DIR,
+    processed_cs_outputs_metadata_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, PROCESSED_DIR,
                                            CS_OUTPUTS_METADATA)
 
     cs_outputs_metadata = pd.read_csv(processed_cs_outputs_metadata_path)
