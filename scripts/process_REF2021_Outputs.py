@@ -47,6 +47,17 @@ def count_null_citations(cs_outputs_df):
     citations_nan_count = cs_outputs_df['Citation count'].isna().sum() # 906
     print("Number of records where citation count is NaN/None:", citations_nan_count)
 
+def count_non_journal_article_citations(cs_outputs_df):
+    # Count the number of CS outputs that are not of type 'Journal Article' and have a valid citation count
+    non_journal_article_cited_df = cs_outputs_df[(cs_outputs_df['Citation count'].notna()) & (cs_outputs_df['Output type'] != 'D')]
+    non_journal_article_cited_count = non_journal_article_cited_df.shape[0] # 1138
+    print("Number of records where Citation count is non none and Output type is not journal-article:", non_journal_article_cited_count)
+
+    print(non_journal_article_cited_df.head().to_string())
+    # Seems like most are of type E (conference outputs)
+    # For conference impact factors for example, you can search for them in the CSV using ISSN & get citation counts
+
+
 def process_cs_outputs():
     ref_outputs_df = read_ref_outputs()
     cs_outputs = filter_cs_outputs(ref_outputs_df)
@@ -58,12 +69,4 @@ process_cs_outputs()
 cs_outputs_df = read_cs_outputs()
 check_inapplicable_citations(cs_outputs_df)
 count_null_citations(cs_outputs_df)
-
-
-# # So it's not just D (Journal Articles) that have citation counts, but only they have impact factors
-# filtered_df = df[(df['Citation count'].notna()) & (df['Output type'] != 'D')]
-# count = len(filtered_df)
-# print("Number of records where Citation count is not NaN/None and Output type is not 'D':", count) # 1138
-# print(filtered_df.head().to_string())
-
-# For conference impact factors for example, you can search for them in the CSV using ISSN & get citation counts
+count_non_journal_article_citations(cs_outputs_df)
