@@ -43,6 +43,9 @@ def check_inapplicable_citations(cs_outputs_df):
     print(f"List of possible values for citation applicable field: {citation_applicable_vals}")
     # ['Yes'] => Citations are applicable for all CS outputs
 
+def count_null_citations(cs_outputs_df):
+    citations_nan_count = cs_outputs_df['Citation count'].isna().sum() # 906
+    print("Number of records where citation count is NaN/None:", citations_nan_count)
 
 def process_cs_outputs():
     ref_outputs_df = read_ref_outputs()
@@ -54,14 +57,9 @@ process_cs_outputs()
 
 cs_outputs_df = read_cs_outputs()
 check_inapplicable_citations(cs_outputs_df)
+count_null_citations(cs_outputs_df)
 
 
-# How many don't have citation counts => 906
-# nan_count = df['Citation count'].isna().sum()
-# print("Number of records where Citation count is NaN or None:", nan_count)
-# df_nan_citations = df[df['Citation count'].isna()]
-# print(df_nan_citations.head().to_string())
-#
 # # So it's not just D (Journal Articles) that have citation counts, but only they have impact factors
 # filtered_df = df[(df['Citation count'].notna()) & (df['Output type'] != 'D')]
 # count = len(filtered_df)
