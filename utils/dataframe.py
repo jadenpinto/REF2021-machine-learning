@@ -15,8 +15,8 @@ def log_dataframe(df):
 def delete_rows_by_values(df, col, values):
     return df[~df[col].isin(values)]
 
-# Count NaNs:
-# print(df.isna().sum())
+def log_null_values(df):
+    print(df.isna().sum())
 
 # Column Types:
 # print(sjr_df.dtypes)
