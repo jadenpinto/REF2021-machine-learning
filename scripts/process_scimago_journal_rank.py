@@ -1,13 +1,13 @@
 import os
 import pandas as pd
 
-from utils.constants import DATASETS_DIR, EXPORTED_IMPACT_FACTOR_DIR, EXPORTED_SCIMAGO_JOURNAL_RANK, PROCESSED_IMPACT_FACTOR_DIR, \
-    PROCESSED_SCIMAGO_JOURNAL_RANK
-from utils.dataframe import log_dataframe, delete_rows_by_values
+from utils.constants import DATASETS_DIR, RAW_DIR, PROCESSED_DIR, SCIMAGO_JOURNAL_RANK
+from utils.dataframe import log_dataframe, delete_rows_by_values, log_null_values
+
 
 def read_sjr_dataset():
     # Path to SCImago journal rank file
-    sjr_dataset_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, EXPORTED_IMPACT_FACTOR_DIR, EXPORTED_SCIMAGO_JOURNAL_RANK)
+    sjr_dataset_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, RAW_DIR, SCIMAGO_JOURNAL_RANK)
 
     try:
         sjr_df = pd.read_csv(
@@ -48,8 +48,8 @@ def log_records_issn_len_not_eight(sjr_df):
     print("Logging records in DF where ISSN length is 1:")
     log_dataframe(single_char_issn)
     """
-    28 rows
-    Issn = "-" (in all 28 records)
+    40 rows
+    Issn = "-" (in all 40 records)
     These journal do not have an Issn => Drop records where Issn = "-"
     """
 
@@ -58,7 +58,7 @@ def log_records_issn_len_not_eight(sjr_df):
     print("Logging records in DF where ISSN length is 18:")
     log_dataframe(eighteen_char_issn)
     """
-    17740 rows
+    17894
     Example: Issn = "15424863, 00079235"
     ISSN length is 18, if the field contains 2 ISSN values => Normalise to 1NF
     """
@@ -93,20 +93,22 @@ def add_hyphen_issn(sjr_df):
     return sjr_df
 
 def write_processed_sjr_csv(sjr_df):
-    processed_sjr_csv_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, PROCESSED_IMPACT_FACTOR_DIR,
-                                           PROCESSED_SCIMAGO_JOURNAL_RANK)
+    processed_sjr_csv_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, PROCESSED_DIR,
+                                           SCIMAGO_JOURNAL_RANK)
 
     sjr_df.to_csv(processed_sjr_csv_path, index=False)
 
 def process_sjr_impact_factor():
-    sjr_df = read_sjr_dataset() # NaN Count: SJR = 210, Rest = 0
-    sjr_df = filter_sjr_columns(sjr_df)
+    sjr_df = read_sjr_dataset()
 
-    log_issn_lengths(sjr_df)                       # 1, 8, 18
-    log_records_issn_len_not_eight(sjr_df)         # if 1, Issn = "-". If 18, Issn includes 2 comma seperated ISSNs
+    sjr_df = filter_sjr_columns(sjr_df)
+    log_null_values(sjr_df) # Null counts: SJR = 2805, Rest = 0
+
+    log_issn_lengths(sjr_df)                       # Possible Lengths: 1, 8, 18
+    log_records_issn_len_not_eight(sjr_df)         # if 1, Issn = "-". If 18, Issn includes 2 comma separated ISSNs
 
     sjr_df = handle_sjr_issn(sjr_df)
-    log_issn_lengths(sjr_df)                       # 9. Example: 1542-4863
+    log_issn_lengths(sjr_df)                       # Possible lengths: 9. Example: 1542-4863
 
     # Write:
     write_processed_sjr_csv(sjr_df)
