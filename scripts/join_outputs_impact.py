@@ -1,14 +1,14 @@
 import os
 import pandas as pd
 
-from utils.constants import DATASETS_DIR, PROCESSED_DIR, SCIMAGO_JOURNAL_RANK, PROCESSED_REF2021_DIR, CS_OUTPUTS_METADATA
+from utils.constants import DATASETS_DIR, PROCESSED_DIR, SCIMAGO_JOURNAL_RANK, CS_OUTPUTS_METADATA
 from utils.dataframe import log_dataframe
 
 def get_cs_outputs_metadata():
-    cleaned_cs_outputs_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, PROCESSED_REF2021_DIR,
+    cs_outputs_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, PROCESSED_DIR,
                                            CS_OUTPUTS_METADATA)
 
-    cs_outputs_df = pd.read_csv(cleaned_cs_outputs_path)
+    cs_outputs_df = pd.read_csv(cs_outputs_path)
     return cs_outputs_df
 
 def get_journal_article_metadata(cs_outputs_df):
@@ -107,3 +107,5 @@ Use the score for the year in which the assessment was carried out on the output
 raw/SCImago_Journal_Rank
 processed in processed: processed/SCImago_Journal_Rank
 """
+
+# todo in future maybe only one function for the joining passing in either all outputs or just journal
