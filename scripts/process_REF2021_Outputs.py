@@ -37,6 +37,13 @@ def read_cs_outputs():
 
     return cs_outputs_df
 
+def check_inapplicable_citations(cs_outputs_df):
+    # Check possible values of the 'Citations applicable' column
+    citation_applicable_vals = cs_outputs_df['Citations applicable'].unique()
+    print(f"List of possible values for citation applicable field: {citation_applicable_vals}")
+    # ['Yes'] => Citations are applicable for all CS outputs
+
+
 def process_cs_outputs():
     ref_outputs_df = read_ref_outputs()
     cs_outputs = filter_cs_outputs(ref_outputs_df)
@@ -44,13 +51,9 @@ def process_cs_outputs():
     write_cs_outputs(cs_outputs)
 
 process_cs_outputs()
+
 cs_outputs_df = read_cs_outputs()
-
-# How many citation counts non-applicable => All are Yes
-# c_a = df['Citations applicable'].unique()
-# for ca in c_a:
-#    print(ca)
-
+check_inapplicable_citations(cs_outputs_df)
 
 
 # How many don't have citation counts => 906
