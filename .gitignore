@@ -4,3 +4,6 @@ venv/
 
 # PyCharm's IDEA folder
 .idea
+
+# Environment file to store API keys
+.env
