@@ -2,15 +2,19 @@
 DATASETS_DIR = "datasets"
 RAW_DIR = "raw"
 PROCESSED_DIR = "processed"
+REFINED_DIR = "refined"
 
 # Raw Files
 CS_RESULTS =  "REF2021_CS_Results.xlsx"
 OUTPUTS_METADATA = "REF2021_Outputs_Metadata.xlsx"
 
-# Processed
+# Processed Files
 CS_OUTPUTS_METADATA = "REF2021_CS_Outputs_Metadata.csv"
 SCIMAGO_JOURNAL_RANK = "SCImago_Journal_Rank.csv"
 CS_JOURNALS_ISSN = "REF2021_CS_Journals_ISSN.csv"
+
+# Refined Files
+CS_JOURNAL_METRICS = "CS_Journal_Metrics.parquet"
 
 # Output Metadata
 output_type = {
