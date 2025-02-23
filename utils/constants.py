@@ -4,14 +4,14 @@ RAW_DIR = "raw"
 PROCESSED_DIR = "processed"
 REFINED_DIR = "refined"
 
-# Raw Files
+# Raw / Processed Files:
 CS_RESULTS =  "REF2021_CS_Results.xlsx"
 OUTPUTS_METADATA = "REF2021_Outputs_Metadata.xlsx"
-
-# Processed Files
 CS_OUTPUTS_METADATA = "REF2021_CS_Outputs_Metadata.csv"
 SCIMAGO_JOURNAL_RANK = "SCImago_Journal_Rank.csv"
 CS_JOURNALS_ISSN = "REF2021_CS_Journals_ISSN.csv"
+SOURCE_NORMALIZED_IMPACT_PER_PAPER = "CWTS_Journal_Indicators_SNIP.xlsx"
+SNIP = "SNIP.parquet"
 
 # Refined Files
 CS_JOURNAL_METRICS = "CS_Journal_Metrics.parquet"
