@@ -4,8 +4,9 @@ import pandas as pd
 from time import sleep
 from dotenv import load_dotenv
 
-from utils.constants import DATASETS_DIR, PROCESSED_DIR, CS_JOURNALS_ISSN, REFINED_DIR, CS_JOURNAL_METRICS
-
+from utils.constants import DATASETS_DIR, PROCESSED_DIR, CS_JOURNALS_ISSN, REFINED_DIR, CS_JOURNAL_METRICS, \
+    SCIMAGO_JOURNAL_RANK
+from utils.dataframe import split_df_on_null_field
 
 def configure():
     load_dotenv()
@@ -141,6 +142,39 @@ def log_null_cs_journal_metadata(loaded_cs_journal_metrics_df):
     # In such records, SNIPList (and other fields like SJRList and citeScoreYearInfoList) either absent or set to null
 
 
+def load_sjr_df():
+    processed_sjr_csv_path = os.path.join(os.path.dirname(__file__), "..", "..", DATASETS_DIR, PROCESSED_DIR,
+                                          SCIMAGO_JOURNAL_RANK)
+
+    sjr_df = pd.read_csv(processed_sjr_csv_path)
+    return sjr_df
+
+def handle_missing_fields(journal_metrics_df):
+    # todo
+    return
+
+def handle_null_sjr(journal_metrics_df):
+    null_sjr_journal_metrics_df, not_null_sjr_journal_metrics_df = split_df_on_null_field(journal_metrics_df, 'SJR')
+
+    # Drop SJR from the null_sjr_df: [here SJR=null for all records, we try to obtain this by joining]
+    null_sjr_journal_metrics_df = null_sjr_journal_metrics_df.drop(columns=['SJR'])
+
+    sjr_df = load_sjr_df()
+
+    null_sjr_with_sjr_df_joined = pd.merge(
+        null_sjr_journal_metrics_df, sjr_df, left_on='ISSN', right_on='Issn', how='left'
+    )
+    # Drop additional fields that are not required [we're only interested in obtaining SJR]
+    null_sjr_with_sjr_df_joined = null_sjr_with_sjr_df_joined.drop(columns=['Rank', 'Title', 'Issn'])
+
+    # Ensure consistent column order
+    null_sjr_with_sjr_df_joined = null_sjr_with_sjr_df_joined[['ISSN', 'Scopus_ID', 'SNIP', 'SJR', 'Cite_Score']]
+
+    journal_metrics_handled_null_sjr_df = pd.concat([null_sjr_with_sjr_df_joined, not_null_sjr_journal_metrics_df])
+
+    return journal_metrics_handled_null_sjr_df
+
+
 configure()
 elsevier_api_key = os.getenv('elsevier_api_key')
 
@@ -149,3 +183,18 @@ write_cs_journal_metrics_df(cs_journal_metrics_df)
 
 loaded_cs_journal_metrics_df = load_cs_journal_metrics_df()
 log_null_cs_journal_metadata(loaded_cs_journal_metrics_df)
+journal_metrics_df_handled_missing_fields =  handle_missing_fields(loaded_cs_journal_metrics_df)
+# Write this ^ to same location
+
+"""
+todo
+in another file, create df of unique scopus ids and get metadata about the metrics john asked for
+see if I can train LLMs to get score [this can be research question]
+
+failed api calls here, for SJR, see if I can obtain from the SJR dataset
+same for snip which (datasets in downloaded)
+maybe check if cite-core has information online.
+[if df just do left join with issn for null cols]
+"""
+
+# Given df -> split into 2, null not null, handle null, rename cols (if needed to match), concat and write
