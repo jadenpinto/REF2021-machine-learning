@@ -20,3 +20,15 @@ def log_null_values(df):
 
 # Column Types:
 # print(sjr_df.dtypes)
+
+def split_df_on_null_field(df, field):
+    field_is_null = df[field].isna()
+
+    null_field_df = df[
+        field_is_null
+    ]
+    not_null_field_df = df[
+        ~field_is_null
+    ]
+
+    return null_field_df, not_null_field_df
