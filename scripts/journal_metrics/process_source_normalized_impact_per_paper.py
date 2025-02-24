@@ -33,11 +33,3 @@ def write_snip_df(snip_df):
 snip_df = load_snip_df()
 processed_snip_df = process_snip_df(snip_df)
 write_snip_df(processed_snip_df)
-
-
-def load_processed_snip_df():
-    snip_df_path = os.path.join(os.path.dirname(__file__), "..", "..", DATASETS_DIR, PROCESSED_DIR,
-                                              SNIP)
-    snip_df = pd.read_parquet(snip_df_path, engine='fastparquet')
-    return snip_df
-
