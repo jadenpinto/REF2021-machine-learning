@@ -27,13 +27,6 @@ def load_sjr_df():
 def log_null_cs_journal_metadata(loaded_cs_journal_metrics_df):
     print("CS journal metadata fields with null counts:")
     print(loaded_cs_journal_metrics_df.isna().sum())
-    """
-    ISSN            0
-    Scopus_ID      96
-    SNIP          129
-    SJR           143
-    Cite_Score    143
-    """
 
     null_scopus_id_cs_journal_metadata_df = loaded_cs_journal_metrics_df[
         loaded_cs_journal_metrics_df['Scopus_ID'].isna()
@@ -91,26 +84,75 @@ def handle_null_snip(journal_metrics_df):
 
 
 def handle_missing_journal_metrics(journal_metrics_df):
-    print(journal_metrics_df.isna().sum())
     journal_metrics_df_handled_missing_fields = handle_null_sjr(journal_metrics_df)
-    print(journal_metrics_df_handled_missing_fields.isna().sum())
     journal_metrics_df_handled_missing_fields = handle_null_snip(journal_metrics_df_handled_missing_fields)
-    print(journal_metrics_df_handled_missing_fields.isna().sum())
     return journal_metrics_df_handled_missing_fields
 
 
+def ensure_uniform_data_types(journal_metrics_df_handled_missing_fields):
+    """
+    fastparquet engine cannot infer the data-type of a field containing both NaN and numeric values when it is
+    stored as dtype: object.
+    Before writing to parquet, ensure all columns have the proper data-type
+
+    :param journal_metrics_df_handled_missing_fields: Journal Metrics dataframe with missing values handled where
+    fields as stored as dtype: object (s)
+    :return: Journal Metrics dataframe with missing values handled and proper data-types for columns
+    """
+    numerical_cols = ["SNIP", "SJR", "Cite_Score"]
+    for numerical_col in numerical_cols:
+        journal_metrics_df_handled_missing_fields[numerical_col] = pd.to_numeric(
+            journal_metrics_df_handled_missing_fields[numerical_col], errors="coerce"
+        )
+
+    # Keep "Scopus_ID" as a string to avoid scientific notation and preserve leading zeros (if any)
+    # Example: Prevent '21100853871' from becoming 2.110085e+10
+    string_cols = ["ISSN", "Scopus_ID"]
+    for string_col in string_cols:
+        journal_metrics_df_handled_missing_fields[string_col] = journal_metrics_df_handled_missing_fields[string_col].astype(
+            "string"
+        )
+
+    return journal_metrics_df_handled_missing_fields
+
+
+def write_journal_metrics_handled_missing_fields_df(journal_metrics_df_handled_missing_fields):
+    cs_journal_metrics_handled_missing_data_df_path = os.path.join(
+        os.path.dirname(__file__), "..", "..", DATASETS_DIR, REFINED_DIR, CS_JOURNAL_METRICS
+    )
+
+    journal_metrics_df_handled_missing_fields.to_parquet(
+        cs_journal_metrics_handled_missing_data_df_path,
+        engine='fastparquet'
+    )
+
 
 cs_journal_metrics_df = load_cs_journal_metrics_df()
-
 log_null_cs_journal_metadata(cs_journal_metrics_df)
+"""
+ISSN            0
+Scopus_ID      96
+SNIP          129
+SJR           143
+Cite_Score    143
+"""
 
 journal_metrics_df_handled_missing_fields =  handle_missing_journal_metrics(cs_journal_metrics_df)
+log_null_cs_journal_metadata(journal_metrics_df_handled_missing_fields)
+"""
+ISSN            0
+Scopus_ID      96
+SNIP           95
+SJR           141
+Cite_Score    143
+"""
 
-# Write to the same location as write_cs_journal_metrics_df [overwrite existing file]
-
+# Explicitly map each column to its correct data-type
+ensure_uniform_data_types(journal_metrics_df_handled_missing_fields)
+# Override existing CS_JOURNAL_METRICS file
+write_journal_metrics_handled_missing_fields_df(journal_metrics_df_handled_missing_fields)
 
 # Given df -> split into 2, null not null, handle null, rename cols (if needed to match), concat and write
-
 """
 failed api calls here, for SJR, see if I can obtain from the SJR dataset
 same for snip which (datasets in downloaded)
