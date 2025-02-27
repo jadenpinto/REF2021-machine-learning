@@ -17,10 +17,16 @@ def get_cs_journal_issns_df():
     return cs_journal_ISSN_df
 
 def get_serial_metadata(issn): # Serial Title API
-    serial_title_metadata_url = f"https://api.elsevier.com/content/serial/title/issn/{issn}?apiKey={elsevier_api_key}&httpAccept=application/json&view=CITESCORE&date=2021-2021"
+    serial_title_metadata_base_url = f"https://api.elsevier.com/content/serial/title/issn/{issn}"
+    serial_title_metadata_url_params = {
+        "apiKey": elsevier_api_key,
+        "httpAccept": "application/json",
+        "view": "CITESCORE",
+        "date": "2021-2021"
+    }
 
     try:
-        response = requests.get(serial_title_metadata_url, timeout=10)
+        response = requests.get(serial_title_metadata_base_url, params=serial_title_metadata_url_params, timeout=10)
         response.raise_for_status()
 
         if response.status_code == 200:
