@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-from utils.constants import DATASETS_DIR, PROCESSED_DIR, SNIP, CS_JOURNAL_METRICS, REFINED_DIR, SCIMAGO_JOURNAL_RANK
+from utils.constants import DATASETS_DIR, PROCESSED_DIR, SNIP, CS_JOURNAL_METRICS, REFINED_DIR, SJR
 
 from utils.dataframe import split_df_on_null_field
 
@@ -19,9 +19,8 @@ def load_processed_snip_df():
 
 def load_sjr_df():
     processed_sjr_csv_path = os.path.join(os.path.dirname(__file__), "..", "..", DATASETS_DIR, PROCESSED_DIR,
-                                          SCIMAGO_JOURNAL_RANK)
-
-    sjr_df = pd.read_csv(processed_sjr_csv_path)
+                                          SJR)
+    sjr_df = pd.read_parquet(processed_sjr_csv_path, engine='fastparquet')
     return sjr_df
 
 def log_null_cs_journal_metadata(loaded_cs_journal_metrics_df):
