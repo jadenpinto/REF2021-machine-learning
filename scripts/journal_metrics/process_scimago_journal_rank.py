@@ -1,13 +1,13 @@
 import os
 import pandas as pd
 
-from utils.constants import DATASETS_DIR, RAW_DIR, PROCESSED_DIR, SCIMAGO_JOURNAL_RANK
+from utils.constants import DATASETS_DIR, RAW_DIR, PROCESSED_DIR, SCIMAGO_JOURNAL_RANK, SJR
 from utils.dataframe import log_dataframe, delete_rows_by_values, log_null_values
 
 
 def read_sjr_dataset():
     # Path to SCImago journal rank file
-    sjr_dataset_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, RAW_DIR, SCIMAGO_JOURNAL_RANK)
+    sjr_dataset_path = os.path.join(os.path.dirname(__file__), "..", "..", DATASETS_DIR, RAW_DIR, SCIMAGO_JOURNAL_RANK)
 
     try:
         sjr_df = pd.read_csv(
@@ -92,11 +92,11 @@ def add_hyphen_issn(sjr_df):
 
     return sjr_df
 
-def write_processed_sjr_csv(sjr_df):
-    processed_sjr_csv_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, PROCESSED_DIR,
-                                           SCIMAGO_JOURNAL_RANK)
+def write_processed_sjr(sjr_df):
+    processed_sjr_path = os.path.join(os.path.dirname(__file__), "..", "..", DATASETS_DIR, PROCESSED_DIR,
+                                           SJR)
 
-    sjr_df.to_csv(processed_sjr_csv_path, index=False)
+    sjr_df.to_parquet(processed_sjr_path, engine='fastparquet')
 
 def process_sjr_impact_factor():
     sjr_df = read_sjr_dataset()
@@ -111,6 +111,6 @@ def process_sjr_impact_factor():
     log_issn_lengths(sjr_df)                       # Possible lengths: 9. Example: 1542-4863
 
     # Write:
-    write_processed_sjr_csv(sjr_df)
+    write_processed_sjr(sjr_df)
 
 process_sjr_impact_factor()
