@@ -103,6 +103,67 @@ def count_citation_metrics(scopus_id_df, citation_metric):
     print(f"The number of journals containing OutputsInTopCitationPercentiles field = {citation_metric_count} (out of {scopus_id_df.shape[0]} journals)")
 
 
+def get_journal_views_metadata(scopus_publication_id): # FieldWeightedViewsImpact
+    views_metadata_base_url = "https://api.elsevier.com/analytics/scival/publication/metrics"
+    views_metadata_url_params = {
+        "metricTypes": "FieldWeightedViewsImpact",
+        "showAsFieldWeighted": "true",
+        "byYear": "false",
+        "publicationIds": scopus_publication_id,
+        "apiKey": elsevier_api_key,
+        "httpAccept": "application/json"
+    }
+
+    try:
+        response = requests.get(views_metadata_base_url, params=views_metadata_url_params, timeout=10)
+        response.raise_for_status()
+
+        if response.status_code == 200:
+            data = response.json()
+            return data
+        else:
+            print(f"Request failed with status code: {response.status_code}")
+            print(response.text)
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching data: {e}")
+
+
+def count_views_metrics(scopus_id_df):
+    view_metric_count = 0
+
+    for scopus_id in scopus_id_df['Scopus_ID']:
+        journal_views_metadata = get_journal_views_metadata(scopus_id)
+
+        if not journal_views_metadata:
+            continue
+
+        if "results" not in journal_views_metadata:
+            continue
+        results_list = journal_views_metadata["results"]
+        if not results_list:
+            continue
+
+        results = results_list[0]
+
+        if "metrics" not in results:
+            continue
+        metrics_list = results["metrics"]
+        if not metrics_list:
+            continue
+
+        field_weighted_views_impact = metrics_list[0]
+        if not field_weighted_views_impact:
+            continue
+
+        field_weighted_views_impact_value = field_weighted_views_impact["value"]
+        if field_weighted_views_impact_value is not None:
+            print(f"Scopus ID of the publication where FieldWeightedViewsImpact exists = {results["publication"]["id"]}")
+            view_metric_count += 1
+
+    print(f"The number of journals containing FieldWeightedViewsImpact field = {view_metric_count} (out of {scopus_id_df.shape[0]} journals)")
+
+
 configure()
 elsevier_api_key = os.getenv('elsevier_api_key')
 
@@ -120,10 +181,6 @@ count_citation_metrics(scopus_id_df, "FieldWeightedCitationImpact")
 Scopus ID of the publication where FieldWeightedCitationImpact exists = 29954
 The number of journals containing OutputsInTopCitationPercentiles field = 1 (out of 1187 journals)
 """
-
-
-
-
 
 
 
@@ -179,4 +236,13 @@ def extract_citation_data(data):
 
 # Tried all records
 # Only printed: 2023 0 29954
+"""
+
+
+
+
+# todo -> make requests for the latest
+"""
+These are articles and not journals:
+https://api.elsevier.com/analytics/scival/publication/metrics?metricTypes=FieldWeightedViewsImpact&publicationIds=85047328215&showAsFieldWeighted=true&apiKey=7f59af901d2d86f78a1fd60c1bf9426a&byYear=false&httpAccept=application/json
 """
