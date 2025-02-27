@@ -154,9 +154,10 @@ write_journal_metrics_handled_missing_fields_df(journal_metrics_df_handled_missi
 
 # Given df -> split into 2, null not null, handle null, rename cols (if needed to match), concat and write
 """
-failed api calls here, for SJR, see if I can obtain from the SJR dataset
-same for snip which (datasets in downloaded)
-maybe check if cite-core has information online.
+failed api calls here, for SJR, see if I can obtain from the SJR dataset [Done]
+same for snip which (datasets in downloaded) [Done]
+maybe check if cite-core has information online. [Notes in notion]
+
 [if df just do left join with issn for null cols]
 
 todo
