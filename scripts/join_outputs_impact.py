@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-from utils.constants import DATASETS_DIR, PROCESSED_DIR, SCIMAGO_JOURNAL_RANK, CS_OUTPUTS_METADATA
+from utils.constants import DATASETS_DIR, PROCESSED_DIR, SJR, CS_OUTPUTS_METADATA
 from utils.dataframe import log_dataframe
 
 def get_cs_outputs_metadata():
@@ -17,10 +17,9 @@ def get_journal_article_metadata(cs_outputs_df):
 
 def get_sjr_impact_factor_df():
     processed_sjr_csv_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, PROCESSED_DIR,
-                                           SCIMAGO_JOURNAL_RANK)
-
-    sjr_impact_df = pd.read_csv(processed_sjr_csv_path)
-    return sjr_impact_df
+                                          SJR)
+    sjr_df = pd.read_parquet(processed_sjr_csv_path, engine='fastparquet')
+    return sjr_df
 
 def join_journal_article_metadata_with_sjr():
     cs_outputs_df = get_cs_outputs_metadata()
@@ -99,8 +98,9 @@ REF Timetable (https://2021.ref.ac.uk/about-the-ref/timetable/index.html)
 - 31 December 2020: End of publication period (cut-off point for publication of research outputs)
 - May 2021 – February 2022 Panels assess submissions
 
-So it's fair to assume most were assessed in 2021
-downloaded SJR data for 2021.
+So it's fair to assume most were assessed in 2021:
+- downloaded SJR data for 2021.
+- filter SNIP for 2021 too
 
 Use the score for the year in which the assessment was carried out on the outputs
 

@@ -11,6 +11,7 @@ CS_OUTPUTS_METADATA = "REF2021_CS_Outputs_Metadata.csv"
 SCIMAGO_JOURNAL_RANK = "SCImago_Journal_Rank.csv"
 CS_JOURNALS_ISSN = "REF2021_CS_Journals_ISSN.csv"
 SOURCE_NORMALIZED_IMPACT_PER_PAPER = "CWTS_Journal_Indicators_SNIP.xlsx"
+SJR = "SCImago_Journal_Rank.parquet"
 SNIP = "SNIP.parquet"
 
 # Refined Files
