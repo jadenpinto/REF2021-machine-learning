@@ -124,15 +124,3 @@ elsevier_api_key = os.getenv('elsevier_api_key')
 
 cs_citation_metadata_df = process_citation_metadata()
 write_cs_citation_metadata_df(cs_citation_metadata_df)
-
-# todo move this to different file, possible extract 3 metrics from SciVal publication API.
-def load_cs_citation_metadata_df():
-    cs_citation_metadata_df_path = os.path.join(
-        os.path.dirname(__file__), "..", "..", DATASETS_DIR, REFINED_DIR, CS_CITATION_METRICS
-    )
-    cs_citation_metadata_df = pd.read_parquet(cs_citation_metadata_df_path, engine='fastparquet')
-    return cs_citation_metadata_df
-
-cs_citation_metadata_df = load_cs_citation_metadata_df()
-print(cs_citation_metadata_df.tail(10).to_string())
-print(cs_citation_metadata_df.shape)
