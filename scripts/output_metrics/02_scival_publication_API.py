@@ -107,6 +107,17 @@ def write_cs_output_metrics_df(cs_output_metrics_df):
 
     cs_output_metrics_df.to_parquet(cs_output_metrics_df_path, engine='fastparquet')
 
+def retry_process_output_metrics():
+    """
+    Running process_output_metrics() initially gave me a rate limit exceeded error.
+    So this method is run when my API limits reset to process the failed records
+    Making calls to the SciVal Publication API and rewriting to CS_Output_Metrics.parquet file
+
+    :return:
+    """
+
+    return True
+
 configure()
 elsevier_api_key = os.getenv('elsevier_api_key')
 
