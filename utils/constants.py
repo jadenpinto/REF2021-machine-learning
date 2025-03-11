@@ -17,6 +17,7 @@ SNIP = "SNIP.parquet"
 # Refined Files
 CS_JOURNAL_METRICS = "CS_Journal_Metrics.parquet"
 CS_CITATION_METRICS = "CS_Citation_Metrics.parquet"
+CS_OUTPUT_METRICS = "CS_Output_Metrics.parquet"
 
 # Output Metadata
 output_type = {

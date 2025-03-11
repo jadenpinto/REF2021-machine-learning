@@ -1,10 +1,9 @@
 import os
 import requests
 import pandas as pd
-from time import sleep
 from dotenv import load_dotenv
 
-from utils.constants import DATASETS_DIR, PROCESSED_DIR, CS_OUTPUTS_METADATA, REFINED_DIR, CS_CITATION_METRICS
+from utils.constants import DATASETS_DIR, REFINED_DIR, CS_CITATION_METRICS, CS_OUTPUT_METRICS
 
 
 def configure():
@@ -92,22 +91,26 @@ def extract_output_metadata(data):
 def process_output_metrics():
     cs_scopus_id_df = get_cs_scopus_id_df()
 
-    def to_do_func():
-        return {}
+    def process_scopus_id(scopus_id):
+        output_metadata = get_output_metadata(scopus_id)
+        parsed_output_data = extract_output_metadata(output_metadata)
+        parsed_output_data["scopus_id"] = scopus_id
+        return parsed_output_data
 
-    cs_output_metrics_df = cs_scopus_id_df["scopus_id"].apply(to_do_func).apply(pd.Series)
+    cs_output_metrics_df = cs_scopus_id_df["scopus_id"].apply(process_scopus_id).apply(pd.Series)
+    return cs_output_metrics_df
 
-    # for scopus_id in cs_scopus_id_df['scopus_id'].head():
-    #     print(scopus_id)
-    #     #data = get_output_metadata(scopus_id)
-    #     #extract = extract_output_metadata(data)
-    #     #print(extract)
+def write_cs_output_metrics_df(cs_output_metrics_df):
+    cs_output_metrics_df_path = os.path.join(
+        os.path.dirname(__file__), "..", "..", DATASETS_DIR, REFINED_DIR, CS_OUTPUT_METRICS
+    )
 
+    cs_output_metrics_df.to_parquet(cs_output_metrics_df_path, engine='fastparquet')
 
 configure()
 elsevier_api_key = os.getenv('elsevier_api_key')
 
-process_output_metrics()
-
+cs_output_metrics_df = process_output_metrics()
+write_cs_output_metrics_df(cs_output_metrics_df)
 
 
