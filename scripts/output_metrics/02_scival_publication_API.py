@@ -88,8 +88,7 @@ def extract_output_metadata(data):
         print(f"Error decoding JSON response body: {e}")
         return None
 
-def process_output_metrics():
-    cs_scopus_id_df = get_cs_scopus_id_df()
+def process_output_metrics(cs_scopus_id_df):
 
     def process_scopus_id(scopus_id):
         output_metadata = get_output_metadata(scopus_id)
@@ -107,6 +106,13 @@ def write_cs_output_metrics_df(cs_output_metrics_df):
 
     cs_output_metrics_df.to_parquet(cs_output_metrics_df_path, engine='fastparquet')
 
+def load_cs_output_metrics_df():
+    cs_output_metrics_df_path = os.path.join(
+        os.path.dirname(__file__), "..", "..", DATASETS_DIR, REFINED_DIR, CS_OUTPUT_METRICS
+    )
+    cs_output_metrics_df = pd.read_parquet(cs_output_metrics_df_path, engine='fastparquet')
+    return cs_output_metrics_df
+
 def retry_process_output_metrics():
     """
     Running process_output_metrics() initially gave me a rate limit exceeded error.
@@ -115,13 +121,25 @@ def retry_process_output_metrics():
 
     :return:
     """
+    original_cs_output_metrics_df = load_cs_output_metrics_df()
 
-    return True
+    records_with_failed_api_calls = original_cs_output_metrics_df['field_weighted_citation_impact'].isna()
+    succeeded_scival_api_df = original_cs_output_metrics_df[~records_with_failed_api_calls]
+    failed_scival_api_df = original_cs_output_metrics_df[records_with_failed_api_calls]
+
+    failed_cs_scopus_id_df = failed_scival_api_df[["scopus_id"]].drop_duplicates().dropna()  # (1273, 1)
+    retried_cs_output_metrics_df = process_output_metrics(failed_cs_scopus_id_df)
+
+    updated_cs_output_metrics_df = pd.concat([succeeded_scival_api_df, retried_cs_output_metrics_df])
+    write_cs_output_metrics_df(updated_cs_output_metrics_df)
+
 
 configure()
 elsevier_api_key = os.getenv('elsevier_api_key')
 
-cs_output_metrics_df = process_output_metrics()
+cs_scopus_id_df = get_cs_scopus_id_df()
+cs_output_metrics_df = process_output_metrics(cs_scopus_id_df)
 write_cs_output_metrics_df(cs_output_metrics_df)
 
+retry_process_output_metrics()
 
