@@ -81,7 +81,7 @@ def process_missing_citations():
 
     log_missing_citations(cs_citation_metadata_df) # Number of outputs missing citation counts: 101
 
-    # write_handled_missing_citations_df(cs_citation_metadata_df)
+    write_handled_missing_citations_df(cs_citation_metadata_df)
 
 
 process_missing_citations()
