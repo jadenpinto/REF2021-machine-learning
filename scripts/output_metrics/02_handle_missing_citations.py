@@ -23,32 +23,41 @@ def log_missing_citations(cs_citation_metadata_df):
     outputs_missing_citations = cs_citation_metadata_df['total_citations'].isna().sum()
     print(f"Number of outputs missing citation counts: {outputs_missing_citations}")
 
-def handle_missing_citations(cs_citation_metadata_df):
-    null_citations_df, not_null_citations_df = split_df_on_null_field(
-        cs_citation_metadata_df, 'total_citations'
+def fill_missing_citations(cs_citation_metadata_df, cs_outputs_metadata):
+    """
+    Fills missing total_citations in cs_citation_metadata_df with values from
+    cs_outputs_metadata using DOI as the matching key.
+
+    Parameters:
+    cs_citation_metadata_df (pd.DataFrame): DataFrame containing total_citations and DOI.
+    cs_outputs_metadata (pd.DataFrame): DataFrame containing DOI and Citation count.
+
+    Returns:
+    pd.DataFrame: Updated cs_citation_metadata_df with filled total_citations.
+    """
+
+    cs_outputs_metadata = cs_outputs_metadata.drop_duplicates(subset="DOI")
+    """
+    Without doing above change, the number of nulls for other fields like scopus_id in merged_df increases
+    If cs_outputs_metadata has duplicate DOI values, a one-to-many merge occurs.
+    This creates duplicate rows in merged_df, potentially leading to more NaN values where scopus_id was previously present.
+    """
+
+    # Merge on DOI, bringing in Citation count from cs_outputs_metadata
+    merged_df = cs_citation_metadata_df.merge(
+        cs_outputs_metadata[['DOI', 'Citation count']],
+        on="DOI",
+        how="left"
     )
 
-    # Drop total_citations from the null_citations_df: [here total_citations=null for all records, we try to obtain this by joining]
-    null_citations_df = null_citations_df.drop(columns=['total_citations'])
+    # Fill null total_citations with Citation count if available
+    merged_df["total_citations"] = merged_df["total_citations"].fillna(merged_df["Citation count"])
 
-    cs_outputs_metadata = get_cs_outputs_metadata()
-    cs_outputs_metadata = cs_outputs_metadata[['DOI', 'Citation count']].rename(columns={'Citation count': 'total_citations'})
+    # Drop the extra 'Citation count' column as it's no longer needed
+    merged_df.drop(columns=["Citation count"], inplace=True)
 
-    null_citations_df_joined = pd.merge(
-        null_citations_df,
-        cs_outputs_metadata,
-        left_on='DOI',
-        right_on='DOI',
-        how='left'
-    )
+    return merged_df
 
-    # Ensure consistent column order
-    cs_citation_metadata_df_columns = cs_citation_metadata_df.columns
-    null_citations_df_joined = null_citations_df_joined[cs_citation_metadata_df_columns]
-
-    updated_citations_df = pd.concat([null_citations_df_joined, not_null_citations_df])
-
-    return updated_citations_df
 
 def write_handled_missing_citations_df(cs_citation_metadata_df):
     cs_citation_metadata_df_path = os.path.join(
@@ -66,10 +75,13 @@ def process_missing_citations():
 
     log_missing_citations(cs_citation_metadata_df) # Number of outputs missing citation counts: 174
 
-    cs_citation_metadata_df = handle_missing_citations(cs_citation_metadata_df)
+    cs_outputs_metadata = get_cs_outputs_metadata()
 
-    log_missing_citations(cs_citation_metadata_df) # Number of outputs missing citation counts: 103
+    cs_citation_metadata_df = fill_missing_citations(cs_citation_metadata_df, cs_outputs_metadata)
 
-    write_handled_missing_citations_df(cs_citation_metadata_df)
+    log_missing_citations(cs_citation_metadata_df) # Number of outputs missing citation counts: 101
+
+    # write_handled_missing_citations_df(cs_citation_metadata_df)
+
 
 process_missing_citations()
