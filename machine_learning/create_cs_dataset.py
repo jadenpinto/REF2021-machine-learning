@@ -67,7 +67,27 @@ def enrich_metadata_with_journal_metrics(cs_outputs_metadata):
 
     return cs_outputs_metadata_journal_metrics
 
+def enrich_metadata_with_output_metrics(cs_outputs_metadata):
+    # print(cs_outputs_metadata.shape) # (7296, 12)
+    # print(cs_outputs_metadata.isna().sum())
 
+    cs_citation_metadata_df = load_cs_citation_metadata_df()  # merge using DOI, and get scopus ID
+
+    cs_outputs_metadata_citation_metrics_df = cs_outputs_metadata.merge(
+        cs_citation_metadata_df,
+        on="DOI",
+        how="left"
+    )
+
+    cs_output_metrics_df = load_cs_output_metrics_df()
+
+    cs_outputs_metadata_citation_output_metrics_df = cs_outputs_metadata_citation_metrics_df.merge( # merge using scopus id
+        cs_output_metrics_df,
+        on="scopus_id",
+        how="left"
+    )
+
+    return cs_outputs_metadata_citation_output_metrics_df
 
 
 def create_cs_dataset():
@@ -76,11 +96,28 @@ def create_cs_dataset():
     cs_outputs_metadata = filter_cs_metadata_fields(cs_outputs_metadata)
 
     cs_outputs_enriched_metadata = enrich_cs_outputs_metadata(cs_outputs_metadata)
-    # Use DOI, Use issn
+
+    return cs_outputs_enriched_metadata
 
 
-#create_cs_dataset() # -> write to ML folder
+create_cs_dataset() # -> write to ML folder
 
 """
 Dataset represent CS outputs
+"""
+
+# todo enrich_metadata_with_output_metrics => can be 2 method calls - one for citation, one for other metrics.
+
+"""
+at the end double check by printing, from start to end, at every stage.
+
+print(cs_outputs_metadata.shape)
+print(cs_outputs_metadata.isna().sum())
+"""
+
+"""
+final method to clean up everything later
+drop scopus_id
+drop the citations per year (profile)
+maybe uni drop of the boolean encoding.
 """
