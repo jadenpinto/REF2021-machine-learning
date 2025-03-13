@@ -73,6 +73,3 @@ def process_missing_citations():
     write_handled_missing_citations_df(cs_citation_metadata_df)
 
 process_missing_citations()
-
-
-# 635 outputs have citation count = 0
