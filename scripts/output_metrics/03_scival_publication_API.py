@@ -4,6 +4,7 @@ import pandas as pd
 from dotenv import load_dotenv
 
 from utils.constants import DATASETS_DIR, REFINED_DIR, CS_CITATION_METRICS, CS_OUTPUT_METRICS
+from utils.API import check_api_quota
 
 
 def configure():
@@ -143,3 +144,7 @@ write_cs_output_metrics_df(cs_output_metrics_df)
 
 retry_process_output_metrics()
 
+check_api_quota(
+    elsevier_api_key,
+    "https://api.elsevier.com/analytics/scival/publication/metrics"
+)
