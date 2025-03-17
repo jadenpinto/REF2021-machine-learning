@@ -1,8 +1,3 @@
-import pandas as pd
-import numpy as np
-from light_size_constrained_clustering import da
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
-
 from machine_learning.create_cs_dataset import create_cs_dataset
 from machine_learning.size_constrained_clustering import DeterministicAnnealing
 
