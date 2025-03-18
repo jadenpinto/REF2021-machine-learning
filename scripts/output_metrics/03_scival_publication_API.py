@@ -35,7 +35,7 @@ def get_output_metadata(scopus_id): # FieldWeightedCitationImpact & OutputsInTop
     }
 
     try:
-        response = requests.get(output_metadata_base_url, params=output_metadata_url_params, timeout=10)
+        response = requests.get(output_metadata_base_url, params=output_metadata_url_params, timeout=100)
         response.raise_for_status()
 
         if response.status_code == 200:
@@ -146,5 +146,31 @@ retry_process_output_metrics()
 
 check_api_quota(
     elsevier_api_key,
-    "https://api.elsevier.com/analytics/scival/publication/metrics"
+    "https://api.elsevier.com/analytics/scival/publication/metrics?metricTypes=FieldWeightedCitationImpact&publicationIds=85021243138"
 )
+
+
+"""
+aa_df = load_cs_output_metrics_df()
+print(aa_df.isna().sum())
+
+# Before handling failed API calls:
+
+field_weighted_citation_impact    1273
+top_citation_percentile           3212
+field_weighted_views_impact       1273
+scopus_id                            0
+dtype: int64
+
+# After retrying failed API calls
+field_weighted_citation_impact       0
+top_citation_percentile           2410
+field_weighted_views_impact          0
+scopus_id                            0
+dtype: int64
+
+Even the error logs were 1273 lines
+[including: Error fetching data: HTTPSConnectionPool(host='api.elsevier.com', port=443): Read timed out. (read timeout=10)]
+it's in seconds - can set it to 100 to be safer
+^ Besides failed API, I got this time out error. Fixed by setting timeout to 100s instead of 10s
+"""
