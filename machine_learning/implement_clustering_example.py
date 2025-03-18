@@ -1,4 +1,4 @@
-from machine_learning.create_cs_dataset import create_cs_dataset
+from machine_learning.create_cs_outputs_enriched_metadata import create_cs_outputs_enriched_metadata
 from machine_learning.size_constrained_clustering import DeterministicAnnealing
 # from machine_learning.size_constrained_clustering_updated import DeterministicAnnealing
 
@@ -68,7 +68,7 @@ def cluster_journal_metrics(cs_outputs_enriched_metadata, random_state=42):
 
 
 
-cs_outputs_enriched_metadata = create_cs_dataset()
+cs_outputs_enriched_metadata = create_cs_outputs_enriched_metadata() # todo, just load the parquet file instead
 cs_outputs_enriched_metadata = cs_outputs_enriched_metadata[['SNIP', 'SJR', 'Cite_Score', 'total_citations']]
 cs_outputs_enriched_metadata = cs_outputs_enriched_metadata.head(1000)
 
