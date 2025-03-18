@@ -1,5 +1,6 @@
 from machine_learning.create_cs_dataset import create_cs_dataset
 from machine_learning.size_constrained_clustering import DeterministicAnnealing
+# from machine_learning.size_constrained_clustering_updated import DeterministicAnnealing
 
 from sklearn.preprocessing import StandardScaler
 from scipy.spatial.distance import cdist
@@ -72,3 +73,34 @@ cs_outputs_enriched_metadata = cs_outputs_enriched_metadata[['SNIP', 'SJR', 'Cit
 cs_outputs_enriched_metadata = cs_outputs_enriched_metadata.head(1000)
 
 clustered_df = cluster_journal_metrics(cs_outputs_enriched_metadata)
+
+"""
+Cluster distribution: Albert's implementation, and not enforcing ratios, head(1000).
+Cluster 0: 15.7%
+Cluster 1: 73.9%
+Cluster 2: 10.4%
+
+If ratios enforced:
+Cluster 0: 30.0%
+Cluster 1: 50.0%
+Cluster 2: 20.0%
+-------------------------------------------------------------------------------------------
+Cluster distribution: Albert's implementation, and not enforcing ratios, entire DF.
+Cluster 0: 37.1%
+Cluster 1: 62.9%
+
+If ratios enforced:
+Cluster 0: 30.0%
+Cluster 1: 50.0%
+Cluster 2: 20.0%
+----------------------------------------------------------------------------------------------
+Cluster distribution: Updated clustering, not enforcing, head(1000):
+Cluster 0: 38.8%
+Cluster 1: 34.5%
+Cluster 2: 26.7%
+----------------------------------------------------------------------------------------------
+Cluster distribution: Updated clustering, not enforcing, entire DF:
+Cluster 0: 29.5%
+Cluster 1: 47.2%
+Cluster 2: 23.4%
+"""
