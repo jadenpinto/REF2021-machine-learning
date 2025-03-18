@@ -23,4 +23,5 @@ def check_api_quota(api_key, api_endpoint):
         print("API call successful. Quota is available.")
 
     else:
+        print("Invalid API call. Quota is available.")
         print(f"{response.status_code} - {response.text}")
