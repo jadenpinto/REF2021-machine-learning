@@ -3,6 +3,7 @@ DATASETS_DIR = "datasets"
 RAW_DIR = "raw"
 PROCESSED_DIR = "processed"
 REFINED_DIR = "refined"
+MACHINE_LEARNING_DIR = "machine_learning"
 
 # Raw / Processed Files:
 CS_RESULTS =  "REF2021_CS_Results.xlsx"
@@ -18,6 +19,9 @@ SNIP = "SNIP.parquet"
 CS_JOURNAL_METRICS = "CS_Journal_Metrics.parquet"
 CS_CITATION_METRICS = "CS_Citation_Metrics.parquet"
 CS_OUTPUT_METRICS = "CS_Output_Metrics.parquet"
+
+# Machine Learning Files
+CS_OUTPUTS_COMPLETE_METADATA = "CS_outputs_complete_metadata.parquet"
 
 # Output Metadata
 output_type = {

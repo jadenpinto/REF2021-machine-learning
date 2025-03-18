@@ -2,7 +2,16 @@ import os
 import pandas as pd
 
 from utils.constants import DATASETS_DIR, PROCESSED_DIR, CS_OUTPUTS_METADATA, REFINED_DIR, \
-    CS_JOURNAL_METRICS, CS_OUTPUT_METRICS, CS_CITATION_METRICS
+    CS_JOURNAL_METRICS, CS_OUTPUT_METRICS, CS_CITATION_METRICS, MACHINE_LEARNING_DIR, CS_OUTPUTS_COMPLETE_METADATA
+
+def main():
+    """
+    Dataframe of CS outputs with complete metadata (Include all available features - that are sensible)
+
+    :return: None
+    """
+    cs_outputs_enriched_metadata = create_cs_outputs_enriched_metadata()
+    write_cs_outputs_enriched_metadata(cs_outputs_enriched_metadata)
 
 
 def get_cs_outputs_metadata():
@@ -89,7 +98,7 @@ def enrich_metadata_with_output_metrics(cs_outputs_metadata):
     return cs_outputs_metadata_citation_output_metrics_df
 
 
-def create_cs_dataset():
+def create_cs_outputs_enriched_metadata():
     cs_outputs_metadata = get_cs_outputs_metadata()
 
     cs_outputs_metadata = filter_cs_metadata_fields(cs_outputs_metadata)
@@ -98,13 +107,19 @@ def create_cs_dataset():
 
     return cs_outputs_enriched_metadata
 
+def write_cs_outputs_enriched_metadata(cs_outputs_enriched_metadata):
+    cs_outputs_enriched_metadata_path = os.path.join(
+        os.path.dirname(__file__), "..", DATASETS_DIR, MACHINE_LEARNING_DIR, CS_OUTPUTS_COMPLETE_METADATA
+    )
 
-cs_outputs_enriched_metadata = create_cs_dataset() # -> write to ML folder
+    cs_outputs_enriched_metadata.to_parquet(
+        cs_outputs_enriched_metadata_path,
+        engine='fastparquet'
+    )
 
 
-"""
-Dataset represent CS outputs
-"""
+if __name__ == "__main__":
+    main()
 
 """
 possibly include all features here and write as parquet. => In datasets/ML. [0.cs_outputs_metadata]
