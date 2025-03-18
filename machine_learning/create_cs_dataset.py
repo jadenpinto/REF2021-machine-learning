@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-from utils.constants import DATASETS_DIR, RAW_DIR, OUTPUTS_METADATA, PROCESSED_DIR, CS_OUTPUTS_METADATA, REFINED_DIR, \
+from utils.constants import DATASETS_DIR, PROCESSED_DIR, CS_OUTPUTS_METADATA, REFINED_DIR, \
     CS_JOURNAL_METRICS, CS_OUTPUT_METRICS, CS_CITATION_METRICS
 
 
@@ -14,15 +14,17 @@ def get_cs_outputs_metadata():
     return cs_outputs_metadata
 
 def filter_cs_metadata_fields(cs_outputs_metadata):
+    # Note: Select fields that provide insight about the output. Do not have to use these fields for clustering.
     cs_outputs_metadata_fields = [
-        'Institution UKPRN code', 'Institution name', 'Output type', 'Title', 'ISSN', 'DOI', 'Year',
-        'Number of additional authors'
+        'Institution UKPRN code', 'Institution name', 'Output type', 'Title', 'Volume title', # UKPRN => Results
+        'Place', 'Publisher',
+        'ISSN', 'DOI', 'Year', # ISSN, DOI => Joins
+        'Number of additional authors', 'Interdisciplinary', 'Forensic science', 'Criminology',
+        'Research group', 'Open access status', 'Cross-referral requested', 'Delayed by COVID19',
+        'Incl sig material before 2014', 'Incl reseach process', 'Incl factual info about significance'
     ]
-    # Possibly 'Citation count' -> but try to use this to back-fill citation API
-    # Can remove later: Institution name (code is enough), Type, Title, Year
-    # Institution UKPRN code: Results
-    # ISSN, DOI: Join
-    # Author count: Normalisation [Look into current literature, I think they use log]
+    # Author count => Normalisation. [no. of authors - was log scaled and used as input in 3rd paper]
+    # Left out 'REF2ID' (Don't think I need this)
     return cs_outputs_metadata[cs_outputs_metadata_fields]
 
 def load_cs_journal_metrics_df():
@@ -68,9 +70,6 @@ def enrich_metadata_with_journal_metrics(cs_outputs_metadata):
     return cs_outputs_metadata_journal_metrics
 
 def enrich_metadata_with_output_metrics(cs_outputs_metadata):
-    # print(cs_outputs_metadata.shape) # (7296, 12)
-    # print(cs_outputs_metadata.isna().sum())
-
     cs_citation_metadata_df = load_cs_citation_metadata_df()  # merge using DOI, and get scopus ID
 
     cs_outputs_metadata_citation_metrics_df = cs_outputs_metadata.merge(
@@ -100,24 +99,19 @@ def create_cs_dataset():
     return cs_outputs_enriched_metadata
 
 
-create_cs_dataset() # -> write to ML folder
+cs_outputs_enriched_metadata = create_cs_dataset() # -> write to ML folder
+
 
 """
 Dataset represent CS outputs
 """
 
-# todo enrich_metadata_with_output_metrics => can be 2 method calls - one for citation, one for other metrics.
-
 """
-at the end double check by printing, from start to end, at every stage.
+possibly include all features here and write as parquet. => In datasets/ML. [0.cs_outputs_metadata]
+This file should represent all possible metadata about a given output.
+Then you can read this file and create different variations of it, in feature engineering file.
 
-print(cs_outputs_metadata.shape)
-print(cs_outputs_metadata.isna().sum())
-"""
-
-"""
-final method to clean up everything later
-drop scopus_id
-drop the citations per year (profile)
-maybe uni drop of the boolean encoding.
+Maybe in feature engineering create multiple files from 0.cs_outputs_metadata to see which works best.
+like one including everything, one for only citations, only for only journal metrics
+another for citations + 1 type of metrics [3 such DFs for every type of metrics] 
 """
