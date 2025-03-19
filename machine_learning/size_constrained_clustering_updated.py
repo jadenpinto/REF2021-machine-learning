@@ -120,9 +120,14 @@ class DeterministicAnnealing:
         if enforce_cluster_distribution:
             self.enforce_cluster_distribution(X)
 
-    def predict(self, X):
+    def predict(self, X): # Fix shape issue
         distance_matrix = self.distance_func(X, self.cluster_centers_)
-        eta = self.update_eta(self._eta, self._demands_prob, distance_matrix)
+        # Create a new demands_prob array with the correct shape for prediction data
+        new_demands_prob = np.ones((X.shape[0], 1))
+        new_demands_prob = new_demands_prob / np.sum(new_demands_prob)
+
+        # Use the stored eta values but with the new demands_prob
+        eta = self.update_eta(self._eta, new_demands_prob, distance_matrix)
         gibbs = self.update_gibbs(eta, distance_matrix)
         labels = np.argmax(gibbs, axis=1)
         return labels
