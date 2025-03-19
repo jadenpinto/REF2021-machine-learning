@@ -10,6 +10,11 @@ def main():
     # The total number of universities who have submitted CS outputs to REF2021: 90
     log_university_count(cs_output_results_df)
 
+    cs_outputs_enriched_metadata = get_cs_outputs_enriched_metadata()
+    enhanced_results_df = enhance_score_distribution(cs_output_results_df, cs_outputs_enriched_metadata)
+
+    log_high_low_scoring_universities(enhanced_results_df)
+
 def get_ref_results():
     results_dataset_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, RAW_DIR, CS_RESULTS)
 
@@ -86,6 +91,52 @@ def enhance_score_distribution(cs_output_results_df, cs_outputs_enriched_metadat
 
     return enhanced_results_df
 
+def get_high_scoring_universities(enhanced_results_df):
+    high_scoring_universities_df = enhanced_results_df[
+        (enhanced_results_df["high_scoring_outputs"] > 0) &
+        (enhanced_results_df["low_scoring_outputs"] == 0)
+        ].sort_values(by="high_scoring_outputs", ascending=True)
+
+    return high_scoring_universities_df[['Institution code (UKPRN)']]
+
+
+def log_high_low_scoring_universities(enhanced_results_df):
+    low_scoring_universities_df = enhanced_results_df[
+        (enhanced_results_df["low_scoring_outputs"] > 0) &
+        (enhanced_results_df["high_scoring_outputs"] == 0)
+        ].sort_values(by="low_scoring_outputs", ascending=True)
+    print(f"Number of universities where all CS outputs were scored low = {low_scoring_universities_df.shape[0]}")
+
+    high_scoring_universities_df = enhanced_results_df[
+        (enhanced_results_df["high_scoring_outputs"] > 0) &
+        (enhanced_results_df["low_scoring_outputs"] == 0)
+        ].sort_values(by="high_scoring_outputs", ascending=True)
+    print(f"Number of universities where all CS outputs were scored high = {high_scoring_universities_df.shape[0]}")
+
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
+"""
+Camb - 20
+Oxd  - 50
+Imp -  10
+
+[are they in 1 or in 0]
+[if 1, elif 0]
+[dont use else because they may not even be there]
+
+Training includes: Camb, Oxd. Testing on Imp.
+20+50+10 = 80 data points - check if more are in 0 or in 1. If more are in 1, then 1 is high scoring, otherwise 0 is high-scoring.
+
+Since they all belong to one uni, you have a list of unis (UKPR code)
+    - For datapoints having these UKPRs, how many of them are in cluster 0 and how many are in cluster 1
+    - The cluster with a higher count of such datapoints, is said to be the high scoring cluster. 
+    
+possibly grouping by unis first
+and then searching a lot more efficient. 
+"""
