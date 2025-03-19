@@ -105,6 +105,13 @@ def create_cs_outputs_enriched_metadata():
 
     cs_outputs_enriched_metadata = enrich_cs_outputs_metadata(cs_outputs_metadata)
 
+    # todo - Optionally drop duplicates. Not a big deal only off by one. Do this and rewrite file if causes issues.
+    """
+    print(cs_outputs_enriched_metadata.shape) # (7296, 37)
+    cs_outputs_enriched_metadata = cs_outputs_enriched_metadata.drop_duplicates()
+    print(cs_outputs_enriched_metadata.shape) # (7295, 37)
+    """
+
     return cs_outputs_enriched_metadata
 
 def write_cs_outputs_enriched_metadata(cs_outputs_enriched_metadata):
