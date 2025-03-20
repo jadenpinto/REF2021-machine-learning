@@ -102,15 +102,15 @@ def infer_cluster_labels(cluster_training_df, cs_output_results_enhanced_df):
         }
 
 
-def get_actual_output_score_ratio(curr_uni_high_scoring_outputs, curr_uni_low_scoring_outputs):
-    total_curr_uni_outputs = curr_uni_high_scoring_outputs + curr_uni_low_scoring_outputs
+def get_output_score_percentages(high_scoring_output_count, low_scoring_output_count):
+    total_output_count = high_scoring_output_count + low_scoring_output_count
 
-    exp_high_percent = (curr_uni_high_scoring_outputs / total_curr_uni_outputs) * 100
-    exp_low_percent = (curr_uni_low_scoring_outputs / total_curr_uni_outputs) * 100
+    high_scoring_output_percentage = (high_scoring_output_count / total_output_count) * 100
+    low_scoring_output_percentage = (low_scoring_output_count / total_output_count) * 100
 
     return (
-        exp_high_percent,
-        exp_low_percent
+        high_scoring_output_percentage,
+        low_scoring_output_percentage
     )
     # Alternatively you can just return [4*+3*, 2*+1*+unclassified]
     # Currently returns it super-precise, but using 4*,3*... from results gives rounded ratios
@@ -156,52 +156,55 @@ def Leave_one_out_cross_validation():
     cs_output_results_df = get_cs_output_results()
     cs_output_results_enhanced_df = enhance_score_distribution(cs_output_results_df, cs_outputs_enriched_metadata)
 
-    total_high_scoring_outputs = cs_output_results_enhanced_df['high_scoring_outputs'].sum()
-    total_low_scoring_outputs = cs_output_results_enhanced_df['low_scoring_outputs'].sum()
+    total_high_scoring_output_count = cs_output_results_enhanced_df['high_scoring_outputs'].sum()
+    total_low_scoring_output_count = cs_output_results_enhanced_df['low_scoring_outputs'].sum()
 
     for ukprn in cs_output_results_enhanced_df['Institution code (UKPRN)']:
 
+        # Remove this later, this is just for debugging.
         if ukprn == 10007856 or (ukprn in [10007784, 10007163, 10006566, 10007167, 10007800]):
-            # ^ Remove this later, this is just for debugging.
 
-            curr_uni_result = cs_output_results_enhanced_df['Institution code (UKPRN)'] == ukprn
-            training_cs_output_results_df = cs_output_results_enhanced_df[~curr_uni_result]
-            testing_cs_output_results_df = cs_output_results_enhanced_df[curr_uni_result]
+            # The current university will be used to test the cluster created by training on  all other university metadata
+            is_curr_university_result = cs_output_results_enhanced_df['Institution code (UKPRN)'] == ukprn
+            curr_university_cs_output_result_df = cs_output_results_enhanced_df[is_curr_university_result]
 
-            curr_uni_high_scoring_outputs = testing_cs_output_results_df['high_scoring_outputs'].item() # Expected
-            curr_uni_low_scoring_outputs = testing_cs_output_results_df['low_scoring_outputs'].item() # Expected
+            curr_uni_high_scoring_output_count = curr_university_cs_output_result_df['high_scoring_outputs'].item() # Expected
+            curr_uni_low_scoring_output_count = curr_university_cs_output_result_df['low_scoring_outputs'].item() # Expected
 
-            exp_high_percent, exp_low_percent = get_actual_output_score_ratio(
-                curr_uni_high_scoring_outputs,
-                curr_uni_low_scoring_outputs
+            # Get the actual percentages of high and low scoring outputs for the current university
+            actual_high_scoring_output_percentage, actual_low_scoring_output_percentage = get_output_score_percentages(
+                curr_uni_high_scoring_output_count,
+                curr_uni_low_scoring_output_count
             )
 
-            curr_uni_outputs = cs_outputs_enriched_metadata['Institution UKPRN code'] == ukprn # can make these 3 lines a fun()
-            training_outputs_df = cs_outputs_enriched_metadata[~curr_uni_outputs]
-            testing_output_df = cs_outputs_enriched_metadata[curr_uni_outputs]
+            is_curr_university_output = cs_outputs_enriched_metadata['Institution UKPRN code'] == ukprn
+            # Use the CS outputs from all universities (excluding current) to create the two clusters
+            training_outputs_df = cs_outputs_enriched_metadata[~is_curr_university_output]
+            # Use current university's CS outputs to evaluate the effectiveness of clustering
+            testing_output_df = cs_outputs_enriched_metadata[is_curr_university_output]
 
-            high_scoring_cluster_outputs = total_high_scoring_outputs - curr_uni_high_scoring_outputs # make this func too
-            low_scoring_cluster_outputs = total_low_scoring_outputs - curr_uni_low_scoring_outputs
+            high_scoring_cluster_output_count = total_high_scoring_output_count - curr_uni_high_scoring_output_count
+            low_scoring_cluster_output_count = total_low_scoring_output_count - curr_uni_low_scoring_output_count
 
-            total_cluster_outputs = high_scoring_cluster_outputs + low_scoring_cluster_outputs
+            cluster_output_count = high_scoring_cluster_output_count + low_scoring_cluster_output_count
 
-            high_scoring_output_cluster_distribution =  (high_scoring_cluster_outputs / total_cluster_outputs)
-            low_scoring_output_cluster_distribution = (low_scoring_cluster_outputs / total_cluster_outputs)
+            high_scoring_output_cluster_distribution =  (high_scoring_cluster_output_count / cluster_output_count)
+            low_scoring_output_cluster_distribution = (low_scoring_cluster_output_count / cluster_output_count)
 
-            distribution = [high_scoring_output_cluster_distribution, low_scoring_output_cluster_distribution]
+            cluster_distribution = [high_scoring_output_cluster_distribution, low_scoring_output_cluster_distribution]
 
             train, predicted = cluster_journal_metrics(
-                training_outputs_df,
-                testing_output_df,
-                n_clusters=2,
-                distribution=distribution
+                training_outputs_df, # All data points (outputs) excluding ones belonging to current university
+                testing_output_df,   # Data points (outputs) of current university
+                n_clusters=2,        # Clusters: High scoring outputs & Low scoring outputs
+                distribution=cluster_distribution
             )
 
             # Returns possibly a dictionary indicating which cluster maps to high_scoring or low_scoring
             cluster_label_mapping = infer_cluster_labels(train, cs_output_results_enhanced_df)
 
             # Verify cluster distribution for training data
-            log_training_data_cluster_distribution(train, cluster_label_mapping, distribution)
+            log_training_data_cluster_distribution(train, cluster_label_mapping, cluster_distribution)
 
             # Show prediction cluster distribution
             (
