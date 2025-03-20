@@ -102,7 +102,7 @@ def infer_cluster_labels(cluster_training_df, cs_output_results_enhanced_df):
         }
 
 
-def get_output_score_percentages(high_scoring_output_count, low_scoring_output_count):
+def get_actual_output_score_percentages(high_scoring_output_count, low_scoring_output_count):
     total_output_count = high_scoring_output_count + low_scoring_output_count
 
     high_scoring_output_percentage = (high_scoring_output_count / total_output_count) * 100
@@ -118,7 +118,7 @@ def get_output_score_percentages(high_scoring_output_count, low_scoring_output_c
     # but just adding the results ratios [6.3, 63.5, 28.6, 1.6, 0] would return (69.8, 30.2)
 
 def log_training_data_cluster_distribution(train, cluster_label_mapping, distribution):
-    cluster_counts = train['cluster'].value_counts(normalize=True).sort_index()
+    cluster_counts = train['cluster'].value_counts(normalize=True)
     print("Training cluster distribution:")
     print(f"Provided distribution = {distribution}")
     for i, percentage in enumerate(cluster_counts):
@@ -126,17 +126,22 @@ def log_training_data_cluster_distribution(train, cluster_label_mapping, distrib
         print(f"Cluster {cluster_label_mapping[i]}: {percentage:.1%}")
 
 def log_testing_data_cluster_distribution(predicted, cluster_label_mapping):
-    predicted_cluster_distribution_high_scoring_outputs = 0
-    predicted_cluster_distribution_low_scoring_outputs = 0
-
-    pred_cluster_counts = predicted['cluster'].value_counts(normalize=True).sort_index()
-    # todo, check normalize, sort.
+    pred_cluster_counts = predicted['cluster'].value_counts(normalize=True)
 
     print(f"[debug] pred_cluster_counts: {pred_cluster_counts}")
     print("\nPrediction cluster distribution:")
-    for i, percentage in enumerate(pred_cluster_counts):
-        # print(f"Cluster {i}: {percentage:.1%}")
-        print(f"Cluster {cluster_label_mapping[i]}: {percentage:.1%}")
+    for i, ratio in enumerate(pred_cluster_counts):
+        # print(f"Cluster {i}: {ratio:.1%}")
+        print(f"Cluster {cluster_label_mapping[i]}: {ratio:.1%}")
+
+def get_predicted_output_score_percentages(predicted, cluster_label_mapping):
+    predicted_cluster_distribution_high_scoring_outputs = 0
+    predicted_cluster_distribution_low_scoring_outputs = 0
+
+    pred_cluster_counts = predicted['cluster'].value_counts(normalize=True) # normalise to convert counts to proportions
+
+    for i, ratio in enumerate(pred_cluster_counts):
+        percentage = ratio * 100
         if cluster_label_mapping[i] == "high_scoring_outputs":
             predicted_cluster_distribution_high_scoring_outputs = percentage
         elif cluster_label_mapping[i] == "low_scoring_outputs":
@@ -172,7 +177,7 @@ def Leave_one_out_cross_validation():
             curr_uni_low_scoring_output_count = curr_university_cs_output_result_df['low_scoring_outputs'].item() # Expected
 
             # Get the actual percentages of high and low scoring outputs for the current university
-            actual_high_scoring_output_percentage, actual_low_scoring_output_percentage = get_output_score_percentages(
+            actual_high_scoring_output_percentage, actual_low_scoring_output_percentage = get_actual_output_score_percentages(
                 curr_uni_high_scoring_output_count,
                 curr_uni_low_scoring_output_count
             )
@@ -207,10 +212,12 @@ def Leave_one_out_cross_validation():
             log_training_data_cluster_distribution(train, cluster_label_mapping, cluster_distribution)
 
             # Show prediction cluster distribution
+            log_testing_data_cluster_distribution(predicted, cluster_label_mapping)
+
             (
-                predicted_cluster_distribution_high_scoring_outputs,
-                predicted_cluster_distribution_low_scoring_outputs
-            ) =  log_testing_data_cluster_distribution(predicted, cluster_label_mapping)
+                predicted_high_scoring_output_percentage,
+                predicted_low_scoring_output_percentage
+            ) = get_predicted_output_score_percentages(predicted, cluster_label_mapping)
 
 
 
