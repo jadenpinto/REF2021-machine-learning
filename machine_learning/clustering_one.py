@@ -12,19 +12,6 @@ from machine_learning.size_constrained_clustering_updated import DeterministicAn
 
 
 def cluster_journal_metrics(train_df, predict_df, n_clusters, distribution, random_state=42):
-    """
-    Apply Deterministic Annealing clustering to journal metrics data.
-    Train on train_df and optionally predict on predict_df.
-
-    Args:
-        train_df (DataFrame): DataFrame containing journal metrics for training
-        predict_df (DataFrame, optional): DataFrame containing journal metrics for prediction
-        random_state (int): Random seed for reproducibility
-
-    Returns:
-        tuple: (trained_df, predicted_df) - DataFrames with cluster columns
-               If predict_df is None, predicted_df will be None
-    """
     # Make a copy of the input dataframes
     train = train_df.copy()
 
@@ -115,13 +102,6 @@ def cluster_journal_metrics(train_df, predict_df, n_clusters, distribution, rand
     )
 
 def infer_cluster_labels(cluster_training_df):
-    """
-    Given s list of universities (UKPR codes) whose publications have received scores of either 4* or 3* (high-scoring)
-    with no other ratings, and two clusters:
-        - Count the occurrences of data points (outputs) published by such universities in both clusters
-        - The cluster with a higher occurrences of such datapoints (outputs), is the cluster representing the high-scoring
-        outputs
-    """
     high_scoring_universities = get_high_scoring_universities(cs_output_results_enhanced_df)
 
     # Filter cluster_training_df for universities in high_scoring_universities => high scoring unis datapoints
@@ -148,28 +128,6 @@ def infer_cluster_labels(cluster_training_df):
             1: 'high_scoring_outputs'
         }
 
-def get_cs_outputs_by_university(cs_outputs_enriched_metadata):
-    """
-    Returns a hashmap mapping Institution UKPRN code to the count of records
-    in the dataframe.
-
-    Parameters:
-    cs_outputs_enriched_metadata (pd.DataFrame): DataFrame containing 'Institution UKPRN code'.
-
-    Returns:
-    dict: A dictionary mapping each Institution UKPRN code to its count.
-
-    Note:
-    # cs_outputs_grouped_by_uni_counts = get_cs_outputs_by_university(cs_outputs_enriched_metadata)
-    # Don't think I need this.
-    # actually might need it.
-    # alt: is to lookup Institution code (UKPRN) in the enhanced results dataframe and get total_university_outputs
-    # actually don't think we need it - cause you're iterating row by row through it so no need for lookup
-    # Get the global high and low, and you can just subtract for training
-    # testing is current high and low (as is)
-    """
-    return cs_outputs_enriched_metadata['Institution UKPRN code'].value_counts().to_dict()
-
 
 def get_actual_output_score_ratio(curr_uni_high_scoring_outputs, curr_uni_low_scoring_outputs):
     total_curr_uni_outputs = curr_uni_high_scoring_outputs + curr_uni_low_scoring_outputs
@@ -186,9 +144,10 @@ def get_actual_output_score_ratio(curr_uni_high_scoring_outputs, curr_uni_low_sc
     # For example, 10007800 (University of the West of Scotland), I return (69.84126984126983, 30.158730158730158)
     # but just adding the results ratios [6.3, 63.5, 28.6, 1.6, 0] would return (69.8, 30.2)
 
-cs_output_results_df = get_cs_output_results()
 cs_outputs_enriched_metadata = get_cs_outputs_enriched_metadata()
-# control f 'cs_outputs_enriched_metadata' I dont think I need this except to create cs_output_results_enhanced_df
+# ^ Can make this another function, get_cs_outputs(type=""). And based on the type of dataset, return the right one.
+
+cs_output_results_df = get_cs_output_results()
 cs_output_results_enhanced_df = enhance_score_distribution(cs_output_results_df, cs_outputs_enriched_metadata)
 
 total_high_scoring_outputs = cs_output_results_enhanced_df['high_scoring_outputs'].sum()
