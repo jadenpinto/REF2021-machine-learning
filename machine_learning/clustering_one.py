@@ -5,7 +5,7 @@ from scipy.spatial.distance import cdist
 
 from machine_learning.create_cs_outputs_enriched_metadata import create_cs_outputs_enriched_metadata
 from machine_learning.cs_output_results import get_cs_outputs_enriched_metadata, enhance_score_distribution, \
-    get_cs_output_results
+    get_cs_output_results, get_high_scoring_universities
 
 # from machine_learning.size_constrained_clustering import DeterministicAnnealing
 from machine_learning.size_constrained_clustering_updated import DeterministicAnnealing
@@ -65,42 +65,88 @@ def cluster_journal_metrics(train_df, predict_df, n_clusters, distribution, rand
     # Add cluster labels to the training dataframe
     train['cluster'] = train_labels
 
+    # Returns possibly a dictionary indicating which cluster maps to high_scoring or low_scoring
+    cluster_label_mapping = infer_cluster_labels(train)
+
     # Verify cluster distribution for training data
     cluster_counts = train['cluster'].value_counts(normalize=True).sort_index()
     print("Training cluster distribution:")
+    print(f"Provided distribution = {distribution}")
     for i, percentage in enumerate(cluster_counts):
-        print(f"Cluster {i}: {percentage:.1%}")
+        # print(f"Cluster {i}: {percentage:.1%}")
+        print(f"Cluster {cluster_label_mapping[i]}: {percentage:.1%}")
 
-    # Handle prediction dataframe if provided
-    predicted = None
-    if predict_df is not None:
-        predicted = predict_df.copy()
+    predicted = predict_df.copy()
 
-        # Apply the same preprocessing as training data
-        for feature in features:
-            predicted[feature] = predicted[feature].fillna(medians[feature])
+    # Apply the same preprocessing as training data
+    for feature in features:
+        predicted[feature] = predicted[feature].fillna(medians[feature])
 
-        # Extract features for prediction
-        X_predict = predicted[features].values
+    # Extract features for prediction
+    X_predict = predicted[features].values
 
-        # Standardize using the same scaler as training data
-        X_predict_scaled = scaler.transform(X_predict)
+    # Standardize using the same scaler as training data
+    X_predict_scaled = scaler.transform(X_predict)
 
-        # Predict cluster labels
-        predict_labels = model.predict(X_predict_scaled)
+    # Predict cluster labels
+    predict_labels = model.predict(X_predict_scaled)
 
-        # Add predicted cluster labels to the prediction dataframe
-        predicted['cluster'] = predict_labels
+    # Add predicted cluster labels to the prediction dataframe
+    predicted['cluster'] = predict_labels
 
-        # Show prediction cluster distribution
-        pred_cluster_counts = predicted['cluster'].value_counts(normalize=True).sort_index()
-        print("\nPrediction cluster distribution:")
-        for i, percentage in enumerate(pred_cluster_counts):
-            print(f"Cluster {i}: {percentage:.1%}")
+    predicted_cluster_distribution_high_scoring_outputs = 0
+    predicted_cluster_distribution_low_scoring_outputs = 0
 
-    return train, predicted
+    # Show prediction cluster distribution
+    pred_cluster_counts = predicted['cluster'].value_counts(normalize=True).sort_index() # todo, check normalize, sort.
+    print(f"[debug] pred_cluster_counts: {pred_cluster_counts}")
+    print("\nPrediction cluster distribution:")
+    for i, percentage in enumerate(pred_cluster_counts):
+        # print(f"Cluster {i}: {percentage:.1%}")
+        print(f"Cluster {cluster_label_mapping[i]}: {percentage:.1%}")
+        if cluster_label_mapping[i] == "high_scoring_outputs":
+            predicted_cluster_distribution_high_scoring_outputs = percentage
+        elif cluster_label_mapping[i] == "low_scoring_outputs":
+            predicted_cluster_distribution_low_scoring_outputs = percentage
 
+    return (
+        predicted_cluster_distribution_high_scoring_outputs,
+        predicted_cluster_distribution_low_scoring_outputs
+    )
 
+def infer_cluster_labels(cluster_training_df):
+    """
+    Given s list of universities (UKPR codes) whose publications have received scores of either 4* or 3* (high-scoring)
+    with no other ratings, and two clusters:
+        - Count the occurrences of data points (outputs) published by such universities in both clusters
+        - The cluster with a higher occurrences of such datapoints (outputs), is the cluster representing the high-scoring
+        outputs
+    """
+    high_scoring_universities = get_high_scoring_universities(cs_output_results_enhanced_df)
+
+    # Filter cluster_training_df for universities in high_scoring_universities => high scoring unis datapoints
+    high_scoring_cs_outputs_df = cluster_training_df[
+        cluster_training_df["Institution UKPRN code"].isin(high_scoring_universities["Institution code (UKPRN)"])
+    ]
+
+    # Count occurrences of each cluster
+    cluster_counts = high_scoring_cs_outputs_df["cluster"].value_counts()
+
+    # Determine which cluster has more datapoints
+    data_points_in_cluster_0 = cluster_counts.get(0, 0)
+    data_points_in_cluster_1 = cluster_counts.get(1, 0)
+    # print(data_points_in_cluster_0, data_points_in_cluster_1)
+
+    if data_points_in_cluster_0 > data_points_in_cluster_1:
+        return {
+            0: 'high_scoring_outputs',
+            1: 'low_scoring_outputs'
+        }
+    else:
+        return {
+            0: 'low_scoring_outputs',
+            1: 'high_scoring_outputs'
+        }
 
 def get_cs_outputs_by_university(cs_outputs_enriched_metadata):
     """
@@ -125,9 +171,24 @@ def get_cs_outputs_by_university(cs_outputs_enriched_metadata):
     return cs_outputs_enriched_metadata['Institution UKPRN code'].value_counts().to_dict()
 
 
+def get_actual_output_score_ratio(curr_uni_high_scoring_outputs, curr_uni_low_scoring_outputs):
+    total_curr_uni_outputs = curr_uni_high_scoring_outputs + curr_uni_low_scoring_outputs
+
+    exp_high_percent = (curr_uni_high_scoring_outputs / total_curr_uni_outputs) * 100
+    exp_low_percent = (curr_uni_low_scoring_outputs / total_curr_uni_outputs) * 100
+
+    return (
+        exp_high_percent,
+        exp_low_percent
+    )
+    # Alternatively you can just return [4*+3*, 2*+1*+unclassified]
+    # Currently returns it super-precise, but using 4*,3*... from results gives rounded ratios
+    # For example, 10007800 (University of the West of Scotland), I return (69.84126984126983, 30.158730158730158)
+    # but just adding the results ratios [6.3, 63.5, 28.6, 1.6, 0] would return (69.8, 30.2)
+
 cs_output_results_df = get_cs_output_results()
 cs_outputs_enriched_metadata = get_cs_outputs_enriched_metadata()
-
+# control f 'cs_outputs_enriched_metadata' I dont think I need this except to create cs_output_results_enhanced_df
 cs_output_results_enhanced_df = enhance_score_distribution(cs_output_results_df, cs_outputs_enriched_metadata)
 
 total_high_scoring_outputs = cs_output_results_enhanced_df['high_scoring_outputs'].sum()
@@ -137,7 +198,8 @@ total_low_scoring_outputs = cs_output_results_enhanced_df['low_scoring_outputs']
 
 for ukprn in cs_output_results_enhanced_df['Institution code (UKPRN)']:
 
-    if ukprn == 10007856:                                             # Remove this later, this is just for debugging.
+    if ukprn == 10007856 or (ukprn in [10007784, 10007163, 10006566, 10007167, 10007800]):
+    # ^ Remove this later, this is just for debugging.
 
         curr_uni_result = cs_output_results_enhanced_df['Institution code (UKPRN)'] == ukprn
         training_cs_output_results_df = cs_output_results_enhanced_df[~curr_uni_result]
@@ -146,11 +208,11 @@ for ukprn in cs_output_results_enhanced_df['Institution code (UKPRN)']:
         curr_uni_high_scoring_outputs = testing_cs_output_results_df['high_scoring_outputs'].item() # Expected
         curr_uni_low_scoring_outputs = testing_cs_output_results_df['low_scoring_outputs'].item() # Expected
 
-        curr_uni_outputs = cs_outputs_enriched_metadata['Institution UKPRN code'] == ukprn
+        curr_uni_outputs = cs_outputs_enriched_metadata['Institution UKPRN code'] == ukprn # can make these 3 lines a fun()
         training_outputs_df = cs_outputs_enriched_metadata[~curr_uni_outputs]
         testing_output_df = cs_outputs_enriched_metadata[curr_uni_outputs]
 
-        high_scoring_cluster_outputs = total_high_scoring_outputs - curr_uni_high_scoring_outputs
+        high_scoring_cluster_outputs = total_high_scoring_outputs - curr_uni_high_scoring_outputs # make this func too
         low_scoring_cluster_outputs = total_low_scoring_outputs - curr_uni_low_scoring_outputs
 
         total_cluster_outputs = high_scoring_cluster_outputs + low_scoring_cluster_outputs
@@ -158,19 +220,17 @@ for ukprn in cs_output_results_enhanced_df['Institution code (UKPRN)']:
         high_scoring_output_cluster_distribution =  (high_scoring_cluster_outputs / total_cluster_outputs)
         low_scoring_output_cluster_distribution = (low_scoring_cluster_outputs / total_cluster_outputs)
 
-
-        trained_df, predicted_df = cluster_journal_metrics(
+        predicted_cluster_distribution_high_scoring_outputs, predicted_cluster_distribution_low_scoring_outputs = cluster_journal_metrics(
             training_outputs_df,
             testing_output_df,
             n_clusters=2,
             distribution=[high_scoring_output_cluster_distribution, low_scoring_output_cluster_distribution]
         )
 
-        total_curr_uni_outputs = curr_uni_high_scoring_outputs + curr_uni_low_scoring_outputs
-        exp_high_percent = (curr_uni_high_scoring_outputs / total_curr_uni_outputs) * 100
-        exp_low_percent = (curr_uni_low_scoring_outputs / total_curr_uni_outputs) * 100
-
-        print(exp_high_percent, exp_low_percent)
+        exp_high_percent, exp_low_percent = get_actual_output_score_ratio(
+            curr_uni_high_scoring_outputs,
+            curr_uni_low_scoring_outputs
+        )
 
 
 # In the cs_output_results_df dataframe, create a new field called total submissions
@@ -211,3 +271,6 @@ curr_uni_high_scoring_outputs = testing_cs_output_results_df['high_scoring_outpu
         # Predictions for clusters should match this count as close as possible.
         # if comparing ratios, might be redundant to use both high and low. For ex: if low=40, inferred tht high=60
 """
+
+# I think make k validation a function, and then get the DFs and then make functions within it.
+# This way you dont have to pass in arguments like cs_outputs_enriched_metadata around, since they're in scope.
