@@ -1,7 +1,7 @@
-import os
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from scipy.spatial.distance import cdist
+import numpy as np
 
 from machine_learning.create_cs_outputs_enriched_metadata import create_cs_outputs_enriched_metadata
 from machine_learning.cs_output_results import get_cs_outputs_enriched_metadata, enhance_score_distribution, \
@@ -152,8 +152,52 @@ def get_predicted_output_score_percentages(predicted, cluster_label_mapping):
         predicted_cluster_distribution_low_scoring_outputs
     )
 
+def compute_clustering_accuracy(
+        actual_high_scoring_output_percentages,
+        predicted_high_scoring_output_percentages,
+        actual_low_scoring_output_percentage,
+        predicted_low_scoring_output_percentage
+    ):
+    # Using both high and low percentages is redundant since one can be derived from the other
+    # Instead, only use one to derive accuracy of model - High
+
+    actual_high = np.array(actual_high_scoring_output_percentages)
+    predicted_high = np.array(predicted_high_scoring_output_percentages)
+
+    # Mean Absolute Error
+    mae = np.mean(np.abs(actual_high - predicted_high))
+
+    # Root Mean Squared Error
+    rmse = np.sqrt(np.mean((actual_high - predicted_high) ** 2))
+
+    # Mean Absolute Percentage Error
+    mape_values = []
+
+    predictions = len(predicted_high_scoring_output_percentages)
+    for prediction in range(predictions):
+        if actual_high_scoring_output_percentages[prediction] == 0:
+            mape_values.append(
+                abs((actual_low_scoring_output_percentage[prediction] - predicted_low_scoring_output_percentage[prediction]) / actual_low_scoring_output_percentage[prediction]) * 100
+            )
+        else:
+            mape_values.append(
+                abs((actual_high_scoring_output_percentages[prediction] - predicted_high_scoring_output_percentages[prediction]) / actual_high_scoring_output_percentages[prediction]) * 100
+            )
+
+    mape = np.mean(mape_values)
+
+    # Lower is better!
+    print(f"Mean Absolute Error: {mae:.3f}")
+    print(f"Root Mean Squared Error: {rmse:.3f}")
+    print(f"Mean Absolute Percentage Error: {mape:.3f}")
+
 # Leave-one-out cross-validation - creates a total of 90 models
 def Leave_one_out_cross_validation():
+    actual_high_scoring_output_percentages = []
+    predicted_high_scoring_output_percentages = []
+
+    actual_low_scoring_output_percentages = []
+    predicted_low_scoring_output_percentages = []
 
     cs_outputs_enriched_metadata = get_cs_outputs_enriched_metadata()
     # ^ Can make this another function, get_cs_outputs(type=""). And based on the type of dataset, return the right one.
@@ -167,8 +211,8 @@ def Leave_one_out_cross_validation():
     for ukprn in cs_output_results_enhanced_df['Institution code (UKPRN)']:
 
         # Remove this later, this is just for debugging.
-        if ukprn == 10007856 or (ukprn in [10007784, 10007163, 10006566, 10007167, 10007800]):
-
+        #if ukprn == 10007856 or (ukprn in [10007784, 10007163, 10006566, 10007167, 10007800]):
+        if 1==1:
             # The current university will be used to test the cluster created by training on  all other university metadata
             is_curr_university_result = cs_output_results_enhanced_df['Institution code (UKPRN)'] == ukprn
             curr_university_cs_output_result_df = cs_output_results_enhanced_df[is_curr_university_result]
@@ -181,6 +225,8 @@ def Leave_one_out_cross_validation():
                 curr_uni_high_scoring_output_count,
                 curr_uni_low_scoring_output_count
             )
+            actual_high_scoring_output_percentages.append(actual_high_scoring_output_percentage)
+            actual_low_scoring_output_percentages.append(actual_low_scoring_output_percentage)
 
             is_curr_university_output = cs_outputs_enriched_metadata['Institution UKPRN code'] == ukprn
             # Use the CS outputs from all universities (excluding current) to create the two clusters
@@ -209,16 +255,25 @@ def Leave_one_out_cross_validation():
             cluster_label_mapping = infer_cluster_labels(train, cs_output_results_enhanced_df)
 
             # Verify cluster distribution for training data
-            log_training_data_cluster_distribution(train, cluster_label_mapping, cluster_distribution)
+            #log_training_data_cluster_distribution(train, cluster_label_mapping, cluster_distribution)
 
             # Show prediction cluster distribution
-            log_testing_data_cluster_distribution(predicted, cluster_label_mapping)
+            #log_testing_data_cluster_distribution(predicted, cluster_label_mapping)
 
             (
                 predicted_high_scoring_output_percentage,
                 predicted_low_scoring_output_percentage
             ) = get_predicted_output_score_percentages(predicted, cluster_label_mapping)
 
+            predicted_high_scoring_output_percentages.append(predicted_high_scoring_output_percentage)
+            predicted_low_scoring_output_percentages.append(predicted_low_scoring_output_percentage)
+
+    compute_clustering_accuracy(
+        actual_high_scoring_output_percentages,
+        predicted_high_scoring_output_percentages,
+        actual_low_scoring_output_percentages,
+        predicted_low_scoring_output_percentages
+    )
 
 
 # In the cs_output_results_df dataframe, create a new field called total submissions
