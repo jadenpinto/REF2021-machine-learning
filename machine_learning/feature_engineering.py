@@ -40,6 +40,22 @@ def transform_and_normalise_citations(df):
 
     return result_df
 
+def get_cs_outputs_df(inputs):
+    cs_outputs_enriched_metadata = get_cs_outputs_enriched_metadata()
+
+    if "citations" in inputs:
+        cs_outputs_enriched_metadata = transform_and_normalise_citations(cs_outputs_enriched_metadata)
+
+    return cs_outputs_enriched_metadata
+
+def get_cluster_features(inputs):
+    features = []
+
+    if "citations" in inputs:
+        features.append('normalised_citations')
+
+    return features
+
 
 if __name__ == "__main__":
     main()
@@ -67,3 +83,6 @@ Field Incl sig material before 2014 has 2 unique values
 Field Incl reseach process has 2 unique values
 Field Incl factual info about significance has 2 unique values
 """
+
+# todo first look at metrics, possibly move it into it's own file.
+# Next, look at feature engineering, consider different options and scaling too.

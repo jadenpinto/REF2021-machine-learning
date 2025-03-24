@@ -6,19 +6,22 @@ import numpy as np
 from machine_learning.create_cs_outputs_enriched_metadata import create_cs_outputs_enriched_metadata
 from machine_learning.cs_output_results import get_cs_outputs_enriched_metadata, enhance_score_distribution, \
     get_cs_output_results, get_high_scoring_universities
+from machine_learning.feature_engineering import get_cs_outputs_df, get_cluster_features
 
 # from machine_learning.size_constrained_clustering import DeterministicAnnealing
 from machine_learning.size_constrained_clustering_updated import DeterministicAnnealing
 
 def main():
-    Leave_one_out_cross_validation()
+    # or maybe just represent using a number like 1,2,3.. and create a table in report map input-set
+    inputs = ['citations']
+    Leave_one_out_cross_validation(inputs)
 
-def cluster_journal_metrics(train_df, predict_df, n_clusters, distribution, random_state=42):
+def cluster_journal_metrics(train_df, predict_df, features, n_clusters, distribution, random_state=42):
     # Make a copy of the input dataframes
     train = train_df.copy()
 
     # Select the numeric columns for clustering
-    features = ['SNIP', 'SJR', 'Cite_Score', 'total_citations']
+    # features = ['SNIP', 'SJR', 'Cite_Score', 'total_citations']
 
     # Store medians from training data for consistent imputation
     medians = {}
@@ -31,7 +34,7 @@ def cluster_journal_metrics(train_df, predict_df, n_clusters, distribution, rand
 
     # Standardize the features
     scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
+    X_train_scaled = X_train # X_train_scaled = scaler.fit_transform(X_train)
 
     # Set the number of clusters and desired distribution
     n_clusters = n_clusters
@@ -63,8 +66,8 @@ def cluster_journal_metrics(train_df, predict_df, n_clusters, distribution, rand
     # Extract features for prediction
     X_predict = predicted[features].values
 
-    # Standardize using the same scaler as training data
-    X_predict_scaled = scaler.transform(X_predict)
+    # Standardise (scale) the testing data points using the same scaler used to fit the training data
+    X_predict_scaled = X_predict # X_predict_scaled = scaler.transform(X_predict)
 
     # Predict cluster labels
     predict_labels = model.predict(X_predict_scaled)
@@ -192,15 +195,15 @@ def compute_clustering_accuracy(
     print(f"Mean Absolute Percentage Error: {mape:.3f}")
 
 # Leave-one-out cross-validation - creates a total of 90 models
-def Leave_one_out_cross_validation():
+def Leave_one_out_cross_validation(inputs):
     actual_high_scoring_output_percentages = []
     predicted_high_scoring_output_percentages = []
 
     actual_low_scoring_output_percentages = []
     predicted_low_scoring_output_percentages = []
 
-    cs_outputs_enriched_metadata = get_cs_outputs_enriched_metadata()
-    # ^ Can make this another function, get_cs_outputs(type=""). And based on the type of dataset, return the right one.
+    cs_outputs_enriched_metadata = get_cs_outputs_df(inputs)
+    cluster_features = get_cluster_features(inputs)
 
     cs_output_results_df = get_cs_output_results()
     cs_output_results_enhanced_df = enhance_score_distribution(cs_output_results_df, cs_outputs_enriched_metadata)
@@ -244,6 +247,7 @@ def Leave_one_out_cross_validation():
         train, predicted = cluster_journal_metrics(
             training_outputs_df, # All data points (outputs) excluding ones belonging to current university
             testing_output_df,   # Data points (outputs) of current university
+            features=cluster_features,   # Features using which clusters are created
             n_clusters=2,        # Clusters: High scoring outputs & Low scoring outputs
             distribution=cluster_distribution
         )
