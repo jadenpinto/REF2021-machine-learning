@@ -64,6 +64,10 @@ class DeterministicAnnealing:
         if np_seed is not None and isinstance(np_seed, np.random.Generator):
             self.rng = np_seed
 
+        # Within-Cluster Sum of Squares:
+        # Sum of the squared distances between each data point and the centroid of the cluster it belongs to
+        self.inertia_ = None
+
     def fit(self, X, demands_prob=None, enforce_cluster_distribution=False):
         # setting T, loop
         T = [1, 0.1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8]
@@ -119,6 +123,12 @@ class DeterministicAnnealing:
 
         if enforce_cluster_distribution:
             self.enforce_cluster_distribution(X)
+
+        # Added as a metric to evaluate cluster performance
+        # Compute Within-Cluster Sum of Squares AKA Inertia
+        cluster_centers = self.cluster_centers_[self.labels_]
+        squared_distances = np.sum((X - cluster_centers) ** 2, axis=1)
+        self.inertia_ = np.sum(squared_distances)
 
     def predict(self, X): # Fix shape issue
         distance_matrix = self.distance_func(X, self.cluster_centers_)
