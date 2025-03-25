@@ -1,13 +1,12 @@
-import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from scipy.spatial.distance import cdist
-import numpy as np
 
 from machine_learning.cluster_performance_evaluation import get_cluster_evaluation_metrics, \
-    update_total_evaluation_metrics, compute_cluster_evaluation_metrics
-from machine_learning.create_cs_outputs_enriched_metadata import create_cs_outputs_enriched_metadata
-from machine_learning.cs_output_results import get_cs_outputs_enriched_metadata, enhance_score_distribution, \
-    get_cs_output_results, get_high_scoring_universities
+    update_total_evaluation_metrics, compute_cluster_evaluation_metrics, compute_clustering_accuracy, \
+    update_total_divergence_metrics, get_divergence_metrics, compute_divergence_metrics
+
+from machine_learning.cs_output_results import enhance_score_distribution, get_cs_output_results, \
+    get_high_scoring_universities
 from machine_learning.feature_engineering import get_cs_outputs_df, get_cluster_features
 
 # from machine_learning.size_constrained_clustering import DeterministicAnnealing
@@ -159,45 +158,6 @@ def get_predicted_output_score_percentages(predicted, cluster_label_mapping):
         predicted_cluster_distribution_low_scoring_outputs
     )
 
-def compute_clustering_accuracy(
-        actual_high_scoring_output_percentages,
-        predicted_high_scoring_output_percentages,
-        actual_low_scoring_output_percentage,
-        predicted_low_scoring_output_percentage
-    ):
-    # Using both high and low percentages is redundant since one can be derived from the other
-    # Instead, only use one to derive accuracy of model - High
-
-    actual_high = np.array(actual_high_scoring_output_percentages)
-    predicted_high = np.array(predicted_high_scoring_output_percentages)
-
-    # Mean Absolute Error
-    mae = np.mean(np.abs(actual_high - predicted_high))
-
-    # Root Mean Squared Error
-    rmse = np.sqrt(np.mean((actual_high - predicted_high) ** 2))
-
-    # Mean Absolute Percentage Error
-    mape_values = []
-
-    predictions = len(predicted_high_scoring_output_percentages)
-    for prediction in range(predictions):
-        if actual_high_scoring_output_percentages[prediction] == 0:
-            mape_values.append(
-                abs((actual_low_scoring_output_percentage[prediction] - predicted_low_scoring_output_percentage[prediction]) / actual_low_scoring_output_percentage[prediction]) * 100
-            )
-        else:
-            mape_values.append(
-                abs((actual_high_scoring_output_percentages[prediction] - predicted_high_scoring_output_percentages[prediction]) / actual_high_scoring_output_percentages[prediction]) * 100
-            )
-
-    mape = np.mean(mape_values)
-
-    # Lower is better!
-    print(f"Mean Absolute Error: {mae:.3f}")
-    print(f"Root Mean Squared Error: {rmse:.3f}")
-    print(f"Mean Absolute Percentage Error: {mape:.3f}")
-
 # Leave-one-out cross-validation - creates a total of 90 models
 def Leave_one_out_cross_validation(inputs):
     actual_high_scoring_output_percentages = []
@@ -222,6 +182,10 @@ def Leave_one_out_cross_validation(inputs):
         "total_davies_bouldin_score": 0,
         "total_calinski_harabasz_score": 0,
         "total_inertia": 0
+    }
+    total_divergence_metrics = {
+        "total_kl_divergence": 0,
+        "total_js_divergence": 0
     }
 
     for ukprn in cs_output_results_enhanced_df['Institution code (UKPRN)']:
@@ -284,6 +248,12 @@ def Leave_one_out_cross_validation(inputs):
         predicted_high_scoring_output_percentages.append(predicted_high_scoring_output_percentage)
         predicted_low_scoring_output_percentages.append(predicted_low_scoring_output_percentage)
 
+        predicted_distribution = [predicted_high_scoring_output_percentage/100, predicted_low_scoring_output_percentage/100]
+        actual_distribution = [actual_high_scoring_output_percentage/100, actual_low_scoring_output_percentage/100]
+
+        divergence_metrics = get_divergence_metrics(predicted_distribution, actual_distribution)
+        total_divergence_metrics = update_total_divergence_metrics(total_divergence_metrics, divergence_metrics)
+
         total_folds += 1
 
     compute_clustering_accuracy(
@@ -298,6 +268,10 @@ def Leave_one_out_cross_validation(inputs):
         total_folds
     )
 
+    compute_divergence_metrics(
+        total_divergence_metrics,
+        total_folds
+    )
 
 # In the cs_output_results_df dataframe, create a new field called total submissions
 # Maybe even in the process_cs_output_results() function
