@@ -3,6 +3,8 @@ from sklearn.preprocessing import StandardScaler
 from scipy.spatial.distance import cdist
 import numpy as np
 
+from machine_learning.cluster_performance_evaluation import get_cluster_evaluation_metrics, \
+    update_total_evaluation_metrics, compute_cluster_evaluation_metrics
 from machine_learning.create_cs_outputs_enriched_metadata import create_cs_outputs_enriched_metadata
 from machine_learning.cs_output_results import get_cs_outputs_enriched_metadata, enhance_score_distribution, \
     get_cs_output_results, get_high_scoring_universities
@@ -54,6 +56,8 @@ def cluster_journal_metrics(train_df, predict_df, features, n_clusters, distribu
     # Get cluster labels for training data
     train_labels = model.labels_
 
+    cluster_evaluation_metrics = get_cluster_evaluation_metrics(model, X_train_scaled, train_labels)
+
     # Add cluster labels to the training dataframe
     train['cluster'] = train_labels
 
@@ -75,7 +79,7 @@ def cluster_journal_metrics(train_df, predict_df, features, n_clusters, distribu
     # Add predicted cluster labels to the prediction dataframe
     predicted['cluster'] = predict_labels
 
-    return train, predicted
+    return train, predicted, cluster_evaluation_metrics
 
 def infer_cluster_labels(cluster_training_df, cs_output_results_enhanced_df):
     high_scoring_universities = get_high_scoring_universities(cs_output_results_enhanced_df)
@@ -211,6 +215,15 @@ def Leave_one_out_cross_validation(inputs):
     total_high_scoring_output_count = cs_output_results_enhanced_df['high_scoring_outputs'].sum()
     total_low_scoring_output_count = cs_output_results_enhanced_df['low_scoring_outputs'].sum()
 
+    # Cluster Evaluation Metrics:
+    total_folds = 0
+    total_evaluation_metrics = {
+        "total_silhouette_score": 0,
+        "total_davies_bouldin_score": 0,
+        "total_calinski_harabasz_score": 0,
+        "total_inertia": 0
+    }
+
     for ukprn in cs_output_results_enhanced_df['Institution code (UKPRN)']:
 
         # The current university will be used to test the cluster created by training on  all other university metadata
@@ -244,13 +257,15 @@ def Leave_one_out_cross_validation(inputs):
 
         cluster_distribution = [high_scoring_output_cluster_distribution, low_scoring_output_cluster_distribution]
 
-        train, predicted = cluster_journal_metrics(
+        train, predicted, cluster_evaluation_metrics = cluster_journal_metrics(
             training_outputs_df, # All data points (outputs) excluding ones belonging to current university
             testing_output_df,   # Data points (outputs) of current university
             features=cluster_features,   # Features using which clusters are created
             n_clusters=2,        # Clusters: High scoring outputs & Low scoring outputs
             distribution=cluster_distribution
         )
+
+        total_evaluation_metrics = update_total_evaluation_metrics(total_evaluation_metrics, cluster_evaluation_metrics)
 
         # Returns possibly a dictionary indicating which cluster maps to high_scoring or low_scoring
         cluster_label_mapping = infer_cluster_labels(train, cs_output_results_enhanced_df)
@@ -269,11 +284,18 @@ def Leave_one_out_cross_validation(inputs):
         predicted_high_scoring_output_percentages.append(predicted_high_scoring_output_percentage)
         predicted_low_scoring_output_percentages.append(predicted_low_scoring_output_percentage)
 
+        total_folds += 1
+
     compute_clustering_accuracy(
         actual_high_scoring_output_percentages,
         predicted_high_scoring_output_percentages,
         actual_low_scoring_output_percentages,
         predicted_low_scoring_output_percentages
+    )
+
+    compute_cluster_evaluation_metrics(
+        total_evaluation_metrics,
+        total_folds
     )
 
 
