@@ -307,6 +307,42 @@ class DeterministicAnnealing:
         self.labels_ = labels
         return labels, resulting_allocation
 
+    def compute_bcss(self, X):
+        # Calculate Between-Cluster Sum of Squares (BCSS).
+        # Higher values mean clusters are farther apart (more separated clusters)
+        if self.cluster_centers_ is None:
+            raise ValueError("Must fit the model first")
+
+        # Convert input to numpy array
+        X = np.array(X)
+
+        # Find the center point of ALL data points
+        global_center = np.mean(X, axis=0)
+
+        # Count points in each cluster
+        cluster_sizes = [0] * self.n_clusters  # Empty list: [0, 0, ....]
+
+        # Count how many times each cluster ID appears in labels
+        for label in self.labels_:
+            cluster_sizes[label] += 1
+
+        total = 0.0
+        # For each cluster center
+        for i in range(self.n_clusters):
+            # Get this cluster's center position
+            cluster_center = self.cluster_centers_[i]
+
+            # Calculate squared distance from global center
+            distance_sq = np.sum((cluster_center - global_center) ** 2)
+
+            # Multiply square of distance by number of points in this cluster
+            cluster_contribution = cluster_sizes[i] * distance_sq
+
+            # Add to total bcss
+            total += cluster_contribution
+
+        return total
+
 """
 Prevents this warning:
 RuntimeWarning: invalid value encountered in divide
