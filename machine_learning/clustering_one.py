@@ -14,8 +14,8 @@ from machine_learning.size_constrained_clustering_updated import DeterministicAn
 
 def main():
     # or maybe just represent using a number like 1,2,3.. and create a table in report map input-set
-    inputs = ['citations']
-    Leave_one_out_cross_validation(inputs)
+    input_set = {'citations', 'journal metrics', 'output metrics'}
+    Leave_one_out_cross_validation(input_set)
 
 def cluster_journal_metrics(train_df, predict_df, features, n_clusters, distribution, random_state=42):
     # Make a copy of the input dataframes
@@ -35,7 +35,7 @@ def cluster_journal_metrics(train_df, predict_df, features, n_clusters, distribu
 
     # Standardize the features
     scaler = StandardScaler()
-    X_train_scaled = X_train # X_train_scaled = scaler.fit_transform(X_train)
+    X_train_scaled = scaler.fit_transform(X_train) # X_train_scaled = X_train
 
     # Set the number of clusters and desired distribution
     n_clusters = n_clusters
@@ -70,7 +70,7 @@ def cluster_journal_metrics(train_df, predict_df, features, n_clusters, distribu
     X_predict = predicted[features].values
 
     # Standardise (scale) the testing data points using the same scaler used to fit the training data
-    X_predict_scaled = X_predict # X_predict_scaled = scaler.transform(X_predict)
+    X_predict_scaled = scaler.transform(X_predict) # X_predict_scaled = X_predict
 
     # Predict cluster labels
     predict_labels = model.predict(X_predict_scaled)
@@ -159,15 +159,15 @@ def get_predicted_output_score_percentages(predicted, cluster_label_mapping):
     )
 
 # Leave-one-out cross-validation - creates a total of 90 models
-def Leave_one_out_cross_validation(inputs):
+def Leave_one_out_cross_validation(input_set):
     actual_high_scoring_output_percentages = []
     predicted_high_scoring_output_percentages = []
 
     actual_low_scoring_output_percentages = []
     predicted_low_scoring_output_percentages = []
 
-    cs_outputs_enriched_metadata = get_cs_outputs_df(inputs)
-    cluster_features = get_cluster_features(inputs)
+    cs_outputs_enriched_metadata = get_cs_outputs_df(input_set)
+    cluster_features = get_cluster_features(input_set)
 
     cs_output_results_df = get_cs_output_results()
     cs_output_results_enhanced_df = enhance_score_distribution(cs_output_results_df, cs_outputs_enriched_metadata)
