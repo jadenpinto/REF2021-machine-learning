@@ -181,11 +181,13 @@ def Leave_one_out_cross_validation(inputs):
         "total_silhouette_score": 0,
         "total_davies_bouldin_score": 0,
         "total_calinski_harabasz_score": 0,
-        "total_inertia": 0
+        "total_inertia": 0,
+        "total_bcss": 0
     }
     total_divergence_metrics = {
         "total_kl_divergence": 0,
-        "total_js_divergence": 0
+        "total_js_divergence": 0,
+        "total_tvd": 0
     }
 
     for ukprn in cs_output_results_enhanced_df['Institution code (UKPRN)']:
