@@ -13,7 +13,7 @@ def main():
     print(cs_outputs_enriched_metadata.dtypes)
 
     a = transform_and_normalise_citations(cs_outputs_enriched_metadata)
-    print(a['normalised_log_citations'].describe())
+    print(a['normalised_citations'].describe())
 
 
 def transform_and_normalise_citations(df):
@@ -40,19 +40,24 @@ def transform_and_normalise_citations(df):
 
     return result_df
 
-def get_cs_outputs_df(inputs):
+def get_cs_outputs_df(input_set):
     cs_outputs_enriched_metadata = get_cs_outputs_enriched_metadata()
 
-    if "citations" in inputs:
+    if "citations" in input_set:
         cs_outputs_enriched_metadata = transform_and_normalise_citations(cs_outputs_enriched_metadata)
 
     return cs_outputs_enriched_metadata
 
-def get_cluster_features(inputs):
+def get_cluster_features(input_set):
     features = []
 
-    if "citations" in inputs:
+    if "citations" in input_set:
         features.append('normalised_citations')
+
+    if "journal metrics" in input_set:
+        # journal_impact_metrics = ['SNIP', 'SJR', 'Cite_Score']
+        journal_impact_metrics = ['SNIP']
+        features.extend(journal_impact_metrics)
 
     return features
 
