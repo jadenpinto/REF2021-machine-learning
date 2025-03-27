@@ -40,12 +40,21 @@ def transform_and_normalise_citations(df):
 
     return result_df
 
+def infer_missing_top_citation_percentile(cs_outputs_enriched_metadata):
+    # infer_top_percentiles: make Nulls to 100% since it's implied
+    cs_outputs_enriched_metadata = cs_outputs_enriched_metadata.copy()
+    cs_outputs_enriched_metadata[['top_citation_percentile']] = cs_outputs_enriched_metadata[['top_citation_percentile']].fillna(value=100.0)
+    return cs_outputs_enriched_metadata
+
 def get_cs_outputs_df(input_set):
     cs_outputs_enriched_metadata = get_cs_outputs_enriched_metadata()
 
     if "citations" in input_set:
         cs_outputs_enriched_metadata = transform_and_normalise_citations(cs_outputs_enriched_metadata)
-    # if "output metrics" in input_set: infer_top_percentiles: make Nulls to 100% since it's implied
+
+    if "scival output metrics" in input_set:
+        cs_outputs_enriched_metadata = infer_missing_top_citation_percentile(cs_outputs_enriched_metadata)
+
     return cs_outputs_enriched_metadata
 
 def get_cluster_features(input_set):
@@ -55,9 +64,12 @@ def get_cluster_features(input_set):
         features.append('normalised_citations')
 
     if "journal metrics" in input_set:
-        # journal_impact_metrics = ['SNIP', 'SJR', 'Cite_Score']
-        journal_impact_metrics = ['SNIP']
+        journal_impact_metrics = ['SNIP', 'SJR', 'Cite_Score']
         features.extend(journal_impact_metrics)
+
+    if "scival output metrics" in input_set:
+        output_metrics = ['field_weighted_citation_impact', 'top_citation_percentile', 'field_weighted_views_impact']
+        features.extend(output_metrics)
 
     return features
 
