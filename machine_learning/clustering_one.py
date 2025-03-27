@@ -17,18 +17,22 @@ def main():
     input_set = {'citations', 'journal metrics', 'output metrics'}
     Leave_one_out_cross_validation(input_set)
 
-def cluster_journal_metrics(train_df, predict_df, features, n_clusters, distribution, random_state=42, scale="Standard"):
+def cluster_journal_metrics(
+        train_df, predict_df, features, n_clusters, distribution, random_state=42,
+        scale="Standard", handle_missing_data="Median"
+):
     # Make a copy of the input dataframes
     train = train_df.copy()
 
     # Select the numeric columns for clustering
     # features = ['SNIP', 'SJR', 'Cite_Score', 'total_citations']
 
-    # Store medians from training data for consistent imputation
-    medians = {}
-    for feature in features:
-        medians[feature] = train[feature].median()
-        train[feature] = train[feature].fillna(medians[feature])
+    if handle_missing_data == "Median":
+        # Store medians from training data for consistent imputation
+        medians = {}
+        for feature in features:
+            medians[feature] = train[feature].median()
+            train[feature] = train[feature].fillna(medians[feature])
 
     # Extract features for clustering
     X_train = train[features].values
@@ -66,9 +70,10 @@ def cluster_journal_metrics(train_df, predict_df, features, n_clusters, distribu
 
     predicted = predict_df.copy()
 
-    # Apply the same preprocessing as training data
-    for feature in features:
-        predicted[feature] = predicted[feature].fillna(medians[feature])
+    if handle_missing_data == "Median":
+        # Apply the same preprocessing as training data
+        for feature in features:
+            predicted[feature] = predicted[feature].fillna(medians[feature])
 
     # Extract features for prediction
     X_predict = predicted[features].values
@@ -233,7 +238,8 @@ def Leave_one_out_cross_validation(input_set):
             features=cluster_features,   # Features using which clusters are created
             n_clusters=2,        # Clusters: High scoring outputs & Low scoring outputs
             distribution=cluster_distribution,
-            scale = "Standard"
+            scale = "Standard",
+            handle_missing_data = "Median"
         )
 
         total_evaluation_metrics = update_total_evaluation_metrics(total_evaluation_metrics, cluster_evaluation_metrics)
