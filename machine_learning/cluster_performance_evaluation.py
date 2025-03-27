@@ -31,11 +31,12 @@ def compute_cluster_evaluation_metrics(total_evaluation_metrics, total_folds):
     average_inertia = total_evaluation_metrics["total_inertia"] / total_folds
     average_bcss = total_evaluation_metrics["total_bcss"] / total_folds
 
-    print(f"Average Silhouette Score = {average_silhouette_score}")
-    print(f"Average Davies Bouldin Score = {average_davies_bouldin_score}")
-    print(f"Average Calinski Harabasz Score = {average_calinski_harabasz_score}")
-    print(f"Average Within-Cluster Sum of Squares (Inertia) = {average_inertia}")
-    print(f"Average Between-Cluster Sum of Squares = {average_bcss}")
+    print("Internal indices - quantify effectiveness of clustering structure:")
+    print(f"Average Silhouette Score = {average_silhouette_score:.4f}")
+    print(f"Average Davies Bouldin Score = {average_davies_bouldin_score:.4f}")
+    print(f"Average Calinski Harabasz Score = {average_calinski_harabasz_score:.4f}")
+    print(f"Average Within-Cluster Sum of Squares (Inertia) = {average_inertia:.4f}")
+    print(f"Average Between-Cluster Sum of Squares = {average_bcss:.4f}")
 
 # External indices - Uses truth labels (proportion of high/low scoring outputs)
 
@@ -77,9 +78,10 @@ def compute_clustering_accuracy(
     r2 = r2_score(actual_high_scoring_output_percentages, predicted_high_scoring_output_percentages)
 
     # Lower is better!
-    print(f"Mean Absolute Error: {mae:.3f}")
-    print(f"Root Mean Squared Error: {rmse:.3f}")
-    print(f"Mean Absolute Percentage Error: {mape:.3f}")
+    print("Regression Scores - compare percentage of predicted and actual high scoring outputs")
+    print(f"Mean Absolute Error: {mae:.4f}")
+    print(f"Root Mean Squared Error: {rmse:.4f}")
+    print(f"Mean Absolute Percentage Error: {mape:.4f}")
 
     # [-inf, 1] => 1 means Perfect predictions.
     # 0 means no relation at all between predicted and actual values
@@ -106,9 +108,10 @@ def compute_divergence_metrics(total_divergence_metrics, total_folds):
     average_js_divergence = total_divergence_metrics["total_js_divergence"] / total_folds
     average_tvd = total_divergence_metrics["total_tvd"] / total_folds
 
-    print(f"Average Kullback-Leibler Divergence of the predicted scores from actual scores = {average_kl_divergence} bits")
-    print(f"Average Jensen-Shannon Divergence between the predicted scores from actual scores = {average_js_divergence} bits")
-    print(f"Average Total Variation Distance = {average_tvd}")
+    print("Divergence Scores: quantify how the predicted high/low probability distribution differs from the actual distribution")
+    print(f"Average Kullback-Leibler Divergence of the predicted scores from actual scores = {average_kl_divergence:.4f} bits")
+    print(f"Average Jensen-Shannon Divergence between the predicted scores from actual scores = {average_js_divergence:.4f} bits")
+    print(f"Average Total Variation Distance = {average_tvd:.4f}")
 
 def kl_divergence(prob_distribution_a, prob_distribution_b):
     """
