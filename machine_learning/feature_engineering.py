@@ -45,7 +45,7 @@ def get_cs_outputs_df(input_set):
 
     if "citations" in input_set:
         cs_outputs_enriched_metadata = transform_and_normalise_citations(cs_outputs_enriched_metadata)
-
+    # if "output metrics" in input_set: infer_top_percentiles: make Nulls to 100% since it's implied
     return cs_outputs_enriched_metadata
 
 def get_cluster_features(input_set):
