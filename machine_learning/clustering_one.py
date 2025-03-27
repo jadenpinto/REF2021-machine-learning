@@ -1,4 +1,4 @@
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from scipy.spatial.distance import cdist
 
 from machine_learning.cluster_performance_evaluation import get_cluster_evaluation_metrics, \
@@ -17,7 +17,7 @@ def main():
     input_set = {'citations', 'journal metrics', 'output metrics'}
     Leave_one_out_cross_validation(input_set)
 
-def cluster_journal_metrics(train_df, predict_df, features, n_clusters, distribution, random_state=42):
+def cluster_journal_metrics(train_df, predict_df, features, n_clusters, distribution, random_state=42, scale="Standard"):
     # Make a copy of the input dataframes
     train = train_df.copy()
 
@@ -34,7 +34,11 @@ def cluster_journal_metrics(train_df, predict_df, features, n_clusters, distribu
     X_train = train[features].values
 
     # Standardize the features
-    scaler = StandardScaler()
+    if scale == "Standard":
+        scaler = StandardScaler()
+    elif scale == "Normal":
+        scaler = MinMaxScaler()
+
     X_train_scaled = scaler.fit_transform(X_train) # X_train_scaled = X_train
 
     # Set the number of clusters and desired distribution
@@ -228,7 +232,8 @@ def Leave_one_out_cross_validation(input_set):
             testing_output_df,   # Data points (outputs) of current university
             features=cluster_features,   # Features using which clusters are created
             n_clusters=2,        # Clusters: High scoring outputs & Low scoring outputs
-            distribution=cluster_distribution
+            distribution=cluster_distribution,
+            scale = "Standard"
         )
 
         total_evaluation_metrics = update_total_evaluation_metrics(total_evaluation_metrics, cluster_evaluation_metrics)
@@ -265,15 +270,16 @@ def Leave_one_out_cross_validation(input_set):
         predicted_low_scoring_output_percentages
     )
 
+    compute_divergence_metrics(
+        total_divergence_metrics,
+        total_folds
+    )
+
     compute_cluster_evaluation_metrics(
         total_evaluation_metrics,
         total_folds
     )
 
-    compute_divergence_metrics(
-        total_divergence_metrics,
-        total_folds
-    )
 
 # In the cs_output_results_df dataframe, create a new field called total submissions
 # Maybe even in the process_cs_output_results() function
