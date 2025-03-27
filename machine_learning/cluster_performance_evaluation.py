@@ -31,12 +31,13 @@ def compute_cluster_evaluation_metrics(total_evaluation_metrics, total_folds):
     average_inertia = total_evaluation_metrics["total_inertia"] / total_folds
     average_bcss = total_evaluation_metrics["total_bcss"] / total_folds
 
-    print("Internal indices - quantify effectiveness of clustering structure:")
-    print(f"Average Silhouette Score = {average_silhouette_score:.4f}")
-    print(f"Average Davies Bouldin Score = {average_davies_bouldin_score:.4f}")
-    print(f"Average Calinski Harabasz Score = {average_calinski_harabasz_score:.4f}")
-    print(f"Average Within-Cluster Sum of Squares (Inertia) = {average_inertia:.4f}")
-    print(f"Average Between-Cluster Sum of Squares = {average_bcss:.4f}")
+    print("Internal indices - quantify effectiveness of clustering structure")
+    print(f"Average Silhouette Score: {average_silhouette_score:.4f}")
+    print(f"Average Davies Bouldin Score: {average_davies_bouldin_score:.4f}")
+    print(f"Average Calinski Harabasz Score: {average_calinski_harabasz_score:.4f}")
+    print(f"Average Within-Cluster Sum of Squares (Inertia): {average_inertia:.4f}")
+    print(f"Average Between-Cluster Sum of Squares: {average_bcss:.4f}")
+    print()
 
 # External indices - Uses truth labels (proportion of high/low scoring outputs)
 
@@ -85,7 +86,8 @@ def compute_clustering_accuracy(
 
     # [-inf, 1] => 1 means Perfect predictions.
     # 0 means no relation at all between predicted and actual values
-    print(f"R^2 score: {r2:.3f}")
+    print(f"R^2 score: {r2:.4f}")
+    print()
 
 def get_divergence_metrics(predicted_distribution, actual_distribution):
     divergence_metrics = {}
@@ -109,9 +111,10 @@ def compute_divergence_metrics(total_divergence_metrics, total_folds):
     average_tvd = total_divergence_metrics["total_tvd"] / total_folds
 
     print("Divergence Scores: quantify how the predicted high/low probability distribution differs from the actual distribution")
-    print(f"Average Kullback-Leibler Divergence of the predicted scores from actual scores = {average_kl_divergence:.4f} bits")
-    print(f"Average Jensen-Shannon Divergence between the predicted scores from actual scores = {average_js_divergence:.4f} bits")
-    print(f"Average Total Variation Distance = {average_tvd:.4f}")
+    print(f"Average Kullback-Leibler Divergence of the predicted scores from actual scores: {average_kl_divergence:.4f} bits")
+    print(f"Average Jensen-Shannon Divergence between the predicted scores from actual scores: {average_js_divergence:.4f} bits")
+    print(f"Average Total Variation Distance: {average_tvd:.4f}")
+    print()
 
 def kl_divergence(prob_distribution_a, prob_distribution_b):
     """
