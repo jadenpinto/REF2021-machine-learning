@@ -14,7 +14,7 @@ from machine_learning.size_constrained_clustering_updated import DeterministicAn
 
 def main():
     # or maybe just represent using a number like 1,2,3.. and create a table in report map input-set
-    input_set = {'citations', 'journal metrics', 'output metrics'}
+    input_set = {'citations', 'journal metrics', 'scival output metrics'}
     Leave_one_out_cross_validation(input_set)
 
 def cluster_journal_metrics(
