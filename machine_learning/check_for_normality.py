@@ -116,13 +116,3 @@ def statistical_normality_tests(cs_outputs_enriched_metadata, features):
 
 if __name__ == "__main__":
     main()
-
-
-"""
-1. quantile-quantile (QQ) plots - recommended 
-2. You can look at a histogram of the data, does the shape look similar to a normal distribution? 
-3. You can do a hypothesis test to formally test this (Shapiro-Wilk test, etc) - try w/ and w/o dropping nulls
-
-Try increasing the number of bins in your histogram plot. You can also try visualising your data with a qq plot,
-looking at other statistics such as kurtosis or perform test for normality.
-"""
