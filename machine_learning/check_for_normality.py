@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as stats
+from statsmodels.graphics.gofplots import qqplot
 
 from machine_learning.cs_output_results import get_cs_outputs_enriched_metadata
 from machine_learning.feature_engineering import infer_missing_top_citation_percentile
@@ -15,7 +16,7 @@ def main():
         'field_weighted_citation_impact', 'top_citation_percentile', 'field_weighted_views_impact'
     ]
     plot_histograms(cs_outputs_enriched_metadata, features)
-    # plot_qq(cs_outputs_enriched_metadata, features)
+    plot_qq(cs_outputs_enriched_metadata, features)
 
 def plot_histograms(cs_outputs_enriched_metadata, features):
     for feature in features:
@@ -28,16 +29,16 @@ def plot_histograms(cs_outputs_enriched_metadata, features):
         plt.hist(data, bins='auto', density=True,alpha=0.6, color='g', label='Data')
 
         # Overlay normal distribution
-        mu = data.mean()
-        sigma = data.std()
+        mean = data.mean()
+        std_dev = data.std()
         xmin, xmax = plt.xlim()
         x = np.linspace(xmin, xmax, 100)
-        pdf = stats.norm.pdf(x, mu, sigma)
+        pdf = stats.norm.pdf(x, mean, std_dev)
         pdf_fmt = 'r-' # Red line to represent the normal fit
 
         plt.plot(x, pdf, pdf_fmt, linewidth=2, label='Normal Fit')
 
-        plt.title(f'Distribution of {feature} - μ={mu:.2f}, σ={sigma:.2f}')
+        plt.title(f'Distribution of {feature} - μ={mean:.2f}, σ={std_dev:.2f}')
         plt.xlabel(feature)
         plt.ylabel('Density')
         plt.legend()
@@ -50,8 +51,15 @@ def plot_qq(cs_outputs_enriched_metadata, features):
     # Quantile-Quantile Plot
 
     for feature in features:
-        # https://stackoverflow.com/questions/13865596/quantile-quantile-plot-using-scipy
-        return
+        data = cs_outputs_enriched_metadata[feature].dropna()
+
+        line_type = 's' # standardised line - scaled by the std dev of the feature with mean added
+        qqplot(data, line=line_type)
+
+        plt.title(f'Quantile-Quantile Plot - {feature}')
+        plt.grid(True)
+        plt.tight_layout()
+        plt.show()
 
 
 if __name__ == "__main__":
