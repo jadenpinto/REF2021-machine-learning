@@ -17,6 +17,7 @@ def main():
     ]
     plot_histograms(cs_outputs_enriched_metadata, features)
     plot_qq(cs_outputs_enriched_metadata, features)
+    statistical_normality_tests(cs_outputs_enriched_metadata, features)
 
 def plot_histograms(cs_outputs_enriched_metadata, features):
     for feature in features:
@@ -61,6 +62,57 @@ def plot_qq(cs_outputs_enriched_metadata, features):
         plt.tight_layout()
         plt.show()
 
+def statistical_normality_tests(cs_outputs_enriched_metadata, features):
+    # Assumption: Sample is drawn from a Gaussian distribution (Data is normal) => Null hypothesis / H0
+    # Threshold: Used to interpret the p value => Alpha, here: 5% = 0.05
+    # Assumption holds true (sample likely drawn from a Gaussian distribution) if p value is greater than threshold
+
+    # p <= alpha: reject H0, not normal.
+    # p > alpha: fail to reject H0, normal.
+    alpha = 0.05
+
+    # 1) Shapiro-Wilk Test {usually suitable for smaller samples of data}
+    print("Shapiro-Wilk Test:")
+    for feature in features:
+        data = cs_outputs_enriched_metadata[feature].dropna()
+        stat, p = stats.shapiro(data)
+        print(f"Statistics = {stat:.2f}, p = {p:.2f}", end= " ==> ")
+        if p > alpha:
+            print(f'{feature} is normal') # Fail to reject H0
+        else:
+            print(f'{feature} is not normal') # Reject H0
+
+    # Per Shapiro - none of my features are normal, all have p=0.
+    # UserWarning: scipy.stats.shapiro: For N > 5000, computed p-value may not be accurate. (All of features have N>5000)
+    print()
+
+    # 2) D’Agostino’s K^2 Test
+    print("D’Agostino’s K^2 Test:")
+    for feature in features:
+        data = cs_outputs_enriched_metadata[feature].dropna()
+        stat, p = stats.normaltest(data)
+        print(f"Statistics = {stat:.2f}, p = {p:.2f}", end=" ==> ")
+        if p > alpha:
+            print(f'{feature} is normal')  # Fail to reject H0
+        else:
+            print(f'{feature} is not normal')  # Reject H0
+
+    # Again, none of my features are normal, all have p=0
+    print()
+
+    # 3) Anderson-Darling Test
+    print("Anderson-Darling Test:")
+    for feature in features:
+        data = cs_outputs_enriched_metadata[feature].dropna()
+        anderson_result = stats.anderson(data)
+        print(f"{feature}: Statistic = {anderson_result.statistic :.2f}")
+
+        for i in range(len(anderson_result.critical_values)):
+            sl, cv = anderson_result.significance_level[i], anderson_result.critical_values[i]
+            if anderson_result.statistic < anderson_result.critical_values[i]:
+                print(f'{sl:.2f}: {cv:.2f}, data is normal')  # Fail to reject H0
+            else:
+                print(f'{sl:.2f}: {cv:.2f}, data is not normal')  # Reject H0
 
 if __name__ == "__main__":
     main()
@@ -69,9 +121,7 @@ if __name__ == "__main__":
 """
 1. quantile-quantile (QQ) plots - recommended 
 2. You can look at a histogram of the data, does the shape look similar to a normal distribution? 
-3. You can do a hypothesis test to formally test this (Shapiro-Wilk test, etc)
-
-
+3. You can do a hypothesis test to formally test this (Shapiro-Wilk test, etc) - try w/ and w/o dropping nulls
 
 Try increasing the number of bins in your histogram plot. You can also try visualising your data with a qq plot,
 looking at other statistics such as kurtosis or perform test for normality.
