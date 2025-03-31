@@ -20,8 +20,8 @@ def transform_and_normalise_citations(df):
     # Create a copy - avoid modifying the original dataframe
     result_df = df.copy()
 
-    # Apply natural log transformation - adding 1 to prevent issues with computing ln(0) which is undefined
-    result_df['normalised_citations'] = np.log(result_df['total_citations'] + 1)
+    # Apply natural log transformation - use log1p which treats ln(0) as ln(1) = 0, since ln(0) is undefined
+    result_df['normalised_citations'] = np.log1p(result_df['total_citations'])
 
     year_groups = result_df.groupby('Year') # Group by year to normalise within each year
 
@@ -46,6 +46,13 @@ def infer_missing_top_citation_percentile(cs_outputs_enriched_metadata):
     cs_outputs_enriched_metadata[['top_citation_percentile']] = cs_outputs_enriched_metadata[['top_citation_percentile']].fillna(value=100.0)
     return cs_outputs_enriched_metadata
 
+def log_transform_author_count(cs_outputs_enriched_metadata):
+    df = cs_outputs_enriched_metadata.copy()
+    # Apply log transformation - using log1p function which treats ln(0) as ln(1) = 0 since ln(0) is undefined
+
+    df['log_transformed_authors'] = np.log1p(df['Number of additional authors'].fillna(0))
+    return df
+
 def get_cs_outputs_df(input_set):
     cs_outputs_enriched_metadata = get_cs_outputs_enriched_metadata()
 
@@ -54,6 +61,9 @@ def get_cs_outputs_df(input_set):
 
     if "scival output metrics" in input_set:
         cs_outputs_enriched_metadata = infer_missing_top_citation_percentile(cs_outputs_enriched_metadata)
+
+    if "author metrics" in input_set:
+        cs_outputs_enriched_metadata = log_transform_author_count(cs_outputs_enriched_metadata)
 
     return cs_outputs_enriched_metadata
 
@@ -70,6 +80,10 @@ def get_cluster_features(input_set):
     if "scival output metrics" in input_set:
         output_metrics = ['field_weighted_citation_impact', 'top_citation_percentile', 'field_weighted_views_impact']
         features.extend(output_metrics)
+
+    if "author metrics" in input_set:
+        author_metrics = ['log_transformed_authors']
+        features.extend(author_metrics)
 
     return features
 
