@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from utils.constants import DATASETS_DIR, RAW_DIR, CS_RESULTS, MACHINE_LEARNING_DIR, CS_OUTPUTS_COMPLETE_METADATA
 
@@ -12,6 +13,9 @@ def main():
 
     cs_outputs_enriched_metadata = get_cs_outputs_enriched_metadata()
     enhanced_results_df = enhance_score_distribution(cs_output_results_df, cs_outputs_enriched_metadata)
+
+    plot_ref_scores_university_distribution(enhanced_results_df)
+    plot_ref_scores_overall_distribution(enhanced_results_df)
 
     log_high_low_scoring_universities(enhanced_results_df)
 
@@ -112,6 +116,39 @@ def log_high_low_scoring_universities(enhanced_results_df):
         (enhanced_results_df["low_scoring_outputs"] == 0)
         ].sort_values(by="high_scoring_outputs", ascending=True)
     print(f"Number of universities where all CS outputs were scored high = {high_scoring_universities_df.shape[0]}")
+
+
+def plot_ref_scores_university_distribution(enhanced_results_df):
+    # Sort data by the number of 4-star outputs for readability
+    df_sorted = enhanced_results_df.sort_values(by='4star_outputs', ascending=False)
+
+    # Set the index to institution name
+    df_plot = df_sorted.set_index('Institution name')[
+        ['4star_outputs', '3star_outputs', '2star_outputs', '1star_outputs', 'unclassified_outputs']
+    ]
+
+    # Plot stacked bar chart:
+    df_plot.plot(kind='bar', stacked=True, figsize=(14, 8)) # Specify larger figure to fit university labels
+    plt.title("REF Output Scores by Institution - CS UoA")
+    plt.ylabel("Number of Outputs")
+    plt.xlabel("Institution")
+    plt.legend(title="REF Rating", loc='best')
+    plt.tight_layout()
+    plt.show()
+
+def plot_ref_scores_overall_distribution(enhanced_results_df):
+    # Sum up all outputs by score across all institutions for the CS UoA
+    total_score_distribution = enhanced_results_df[
+        ['4star_outputs', '3star_outputs', '2star_outputs', '1star_outputs', 'unclassified_outputs']
+    ].sum()
+
+    labels = ['4*', '3*', '2*', '1*', 'Unclassified']
+
+    # Plot pie chat:
+    plt.pie(total_score_distribution, labels=labels, autopct='%1.1f%%')
+    plt.title('Overall REF Output Score Distribution - CS UoA')
+    plt.tight_layout()
+    plt.show()
 
 
 if __name__ == "__main__":
