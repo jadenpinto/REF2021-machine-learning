@@ -4,6 +4,7 @@ RAW_DIR = "raw"
 PROCESSED_DIR = "processed"
 REFINED_DIR = "refined"
 MACHINE_LEARNING_DIR = "machine_learning"
+FIGURES_DIR = "figures"
 
 # Raw / Processed Files:
 CS_RESULTS =  "REF2021_CS_Results.xlsx"

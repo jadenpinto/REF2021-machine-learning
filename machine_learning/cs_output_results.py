@@ -2,7 +2,8 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from utils.constants import DATASETS_DIR, RAW_DIR, CS_RESULTS, MACHINE_LEARNING_DIR, CS_OUTPUTS_COMPLETE_METADATA
+from utils.constants import DATASETS_DIR, RAW_DIR, CS_RESULTS, MACHINE_LEARNING_DIR, CS_OUTPUTS_COMPLETE_METADATA, \
+    FIGURES_DIR
 
 
 def main():
@@ -148,6 +149,12 @@ def plot_ref_scores_overall_distribution(enhanced_results_df):
     plt.pie(total_score_distribution, labels=labels, autopct='%1.1f%%')
     plt.title('Overall REF Output Score Distribution - CS UoA')
     plt.tight_layout()
+
+    ref_cs_scores_overall_distribution_path = os.path.join(
+        os.path.dirname(__file__), "..", FIGURES_DIR, "ref_cs_scores_overall_distribution.png"
+    )
+    plt.savefig(ref_cs_scores_overall_distribution_path)
+
     plt.show()
 
 
