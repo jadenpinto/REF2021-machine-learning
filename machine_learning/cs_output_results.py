@@ -135,6 +135,13 @@ def plot_ref_scores_university_distribution(enhanced_results_df):
     plt.xlabel("Institution")
     plt.legend(title="REF Rating", loc='best')
     plt.tight_layout()
+
+    # Save stacked bar chart:
+    ref_scores_university_distribution_path = os.path.join(
+        os.path.dirname(__file__), "..", FIGURES_DIR, "ref_cs_scores_university_distribution.png"
+    )
+    plt.savefig(ref_scores_university_distribution_path)
+
     plt.show()
 
 def plot_ref_scores_overall_distribution(enhanced_results_df):
@@ -150,6 +157,7 @@ def plot_ref_scores_overall_distribution(enhanced_results_df):
     plt.title('Overall REF Output Score Distribution - CS UoA')
     plt.tight_layout()
 
+    # Save pie chart:
     ref_cs_scores_overall_distribution_path = os.path.join(
         os.path.dirname(__file__), "..", FIGURES_DIR, "ref_cs_scores_overall_distribution.png"
     )
