@@ -7,7 +7,25 @@ from utils.constants import DATASETS_DIR, PROCESSED_DIR, CS_OUTPUTS_METADATA, ou
 from utils.dataframe import log_dataframe
 
 
+def main():
+    """
+    Get CS outputs submission metadata, and visualise it to explore the different submission Types
+    Log the total number of journals of the submissions
+    Plot the distribution of output types for every university
+
+    :return: None
+    """
+    cs_outputs_metadata = get_outputs_metadata()
+    plot_output_types(cs_outputs_metadata)
+    count_journals(cs_outputs_metadata)
+    plot_university_output_distribution(cs_outputs_metadata) # stacked bar chart
+
 def get_outputs_metadata():
+    """
+    Read REF2021_CS_Outputs_Metadata CSV File representing metadata of submissions made to CS UoA
+
+    :return: cs_outputs_metadata - a pandas dataframe containing every submission made to the CS UOA with their metadata
+    """
     processed_cs_outputs_metadata_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, PROCESSED_DIR,
                                            CS_OUTPUTS_METADATA)
 
@@ -16,9 +34,16 @@ def get_outputs_metadata():
     return cs_outputs_metadata
 
 def plot_output_types(cs_outputs_metadata):
+    """
+    Plot a pie chart of the different output types of the REF2021 submisssions
+
+    :param cs_outputs_metadata: Pandas DF representing submissions made to the CS UOA
+    :return: None
+    """
     output_type_counts = cs_outputs_metadata['Output type'].value_counts()
 
-    # Plot Output types: "Journal article", "Conference contribution", and "Other"
+    # Plot Output types
+    # Group all different types into one of 3 categories: 1) Journal article 2) Conference contribution and 3) Other
     output_type_grouped_counts = {}
 
     for output_type_key, output_type_count in output_type_counts.items():
@@ -26,8 +51,10 @@ def plot_output_types(cs_outputs_metadata):
         print(f"Output Key={output_type_key}, Output Type = {type_of_output}, Count = {output_type_count}")
 
         if (type_of_output == "Journal article") or (type_of_output == "Conference contribution"):
+            # Journal articles, and Conference contribution, are their own types of outputs
             output_type_grouped_counts[type_of_output] = output_type_count
         else:
+            # All other outputs ground as the 'Other' Category
             output_type_grouped_counts['Other'] = output_type_grouped_counts.get('Other', 0) + output_type_count
 
     # Plot pie chart using grouped counts
@@ -46,10 +73,23 @@ def plot_output_types(cs_outputs_metadata):
     plt.show()
 
 def count_journals(cs_outputs_metadata):
+    """
+    Log the total number of journals found in the submissions made to CS OuA
+
+    :param cs_outputs_metadata: Pandas DF representing submissions made to the CS UOA
+    :return: None
+    """
     journal_names = cs_outputs_metadata['Volume title'].unique()
     print(f"The total number of journals in CS outputs metadata = {journal_names.size}") # 2734
 
 def group_output_type(output_type_key):
+    """
+    Function returning output type based on the character key
+
+    :param output_type_key: Character indication output type
+    :return: Journal article if output is a journal article, Conference contribution for conference submissions, and Other
+             otherwise
+    """
     type_of_output = output_type[output_type_key]
     if (type_of_output == "Journal article") or (type_of_output == "Conference contribution"):
         return type_of_output
@@ -116,9 +156,14 @@ def plot_university_output_distribution(cs_outputs_metadata):
     plot_university_pivot_data(bottom_half_universities_by_output_counts)
 
 
-cs_outputs_metadata = get_outputs_metadata()
-plot_output_types(cs_outputs_metadata)
-count_journals(cs_outputs_metadata)
-plot_university_output_distribution(cs_outputs_metadata) # stacked bar chart
+if __name__ == "__main__":
+    main()
 
-# TODO Unis with all outputs = research articles
+
+"""
+Investigating REF output metadata: print(cs_outputs_metadata.isna().sum())
+# Non-English field, all were null (and no 'Yes' values) => All cs submissions were in English.
+# Similarly Citations applicable = Yes for all => Citations were applicable for all submissions
+# 'Delayed by COVID19' = Yes, for only 1 output
+# 'Propose double weighting', and 'Is reserve output' all none
+"""
