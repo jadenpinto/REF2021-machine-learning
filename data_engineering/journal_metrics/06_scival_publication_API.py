@@ -183,6 +183,8 @@ The number of journals containing OutputsInTopCitationPercentiles field = 1 (out
 """
 
 
+# todo:
+# count_views_metrics(scopus_id_df.head(1))
 
 """
 def extract_citation_data(data):
