@@ -103,12 +103,13 @@ def group_output_type(output_type_key):
     else:
         return "Other"
 
-def plot_university_pivot_data(pivot_data):
+def plot_university_pivot_data(pivot_data, filename):
     """
     Plot a stacked bar chart to visualise the distribution of research output types across universities
     :param pivot_data: Pandas DF pivot table with rows are universities, columns are output types, and
                        values are output counts
-    :return:
+    :param filename: If specified, saves the plot to the figures dir/
+    :return: None
     """
     # Sort universities by total output count
     pivot_data['Total'] = pivot_data.sum(axis=1)
@@ -139,6 +140,13 @@ def plot_university_pivot_data(pivot_data):
         ax.text(total, i, f' Total: {total}', va='center')
 
     plt.tight_layout() # Tight layout, to fit all info on screen
+
+    if filename:
+        ref_cs_submission_types_distribution_by_uni_path = os.path.join(
+            os.path.dirname(__file__), "..", FIGURES_DIR, filename
+        )
+        plt.savefig(ref_cs_submission_types_distribution_by_uni_path)
+
     plt.show()
     plt.close()
 
@@ -179,8 +187,13 @@ def plot_university_output_distribution(cs_outputs_metadata):
     top_half_universities_by_output_counts = pivot_data.nlargest(university_count, 'Total')
     bottom_half_universities_by_output_counts = pivot_data.nsmallest(university_count, 'Total')
 
-    plot_university_pivot_data(top_half_universities_by_output_counts)
-    plot_university_pivot_data(bottom_half_universities_by_output_counts)
+    # Plot top and bottom half of unis - pass in filenames to store in figures dir
+    plot_university_pivot_data(
+        top_half_universities_by_output_counts, "ref_cs_submissions_type_distribution_top_half.png"
+    )
+    plot_university_pivot_data(
+        bottom_half_universities_by_output_counts, "ref_cs_submissions_type_distribution_bottom_half.png"
+    )
 
 
 if __name__ == "__main__":
