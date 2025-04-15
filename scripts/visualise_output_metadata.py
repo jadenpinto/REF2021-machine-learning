@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from utils.constants import DATASETS_DIR, PROCESSED_DIR, CS_OUTPUTS_METADATA, output_type
+from utils.constants import DATASETS_DIR, PROCESSED_DIR, CS_OUTPUTS_METADATA, output_type, FIGURES_DIR
 from utils.dataframe import log_dataframe
 
 
@@ -70,6 +70,13 @@ def plot_output_types(cs_outputs_metadata):
         loc="center left",
         bbox_to_anchor=(1, 0, 0.5, 1)
     )
+
+    # Save an PNG in figures/ dir
+    ref_cs_submission_types_distribution_path = os.path.join(
+        os.path.dirname(__file__), "..", FIGURES_DIR, "ref_cs_submissions_type_distribution.png"
+    )
+    plt.savefig(ref_cs_submission_types_distribution_path)
+
     plt.show()
 
 def count_journals(cs_outputs_metadata):
@@ -97,17 +104,23 @@ def group_output_type(output_type_key):
         return "Other"
 
 def plot_university_pivot_data(pivot_data):
+    """
+    Plot a stacked bar chart to visualise the distribution of research output types across universities
+    :param pivot_data: Pandas DF pivot table with rows are universities, columns are output types, and
+                       values are output counts
+    :return:
+    """
     # Sort universities by total output count
     pivot_data['Total'] = pivot_data.sum(axis=1)
     pivot_data = pivot_data.sort_values('Total', ascending=True)
-    pivot_data = pivot_data.drop('Total', axis=1)
+    pivot_data = pivot_data.drop('Total', axis=1) # Delete temp total column
 
     # Create the stacked bar chart
-    fig, ax = plt.subplots(figsize=(12, max(8, len(pivot_data) * 0.4)))  # Adjust height based on number of universities
+    fig, ax = plt.subplots(figsize=(12, max(8, len(pivot_data) * 0.4)))  # Adjust height based on uni count
 
     # Create stacked bars
     bottom = np.zeros(len(pivot_data))
-    for category in ['Journal article', 'Conference contribution', 'Other']:
+    for category in ['Journal article', 'Conference contribution', 'Other']: # Plot data types in this order
         if category in pivot_data.columns:
             values = pivot_data[category]
             ax.barh(pivot_data.index, values, left=bottom, label=category)
@@ -116,7 +129,8 @@ def plot_university_pivot_data(pivot_data):
     ax.set_title('Output Distribution by University')
     ax.set_xlabel('Number of Outputs')
     ax.set_ylabel('University')
-    # Add legend
+
+    # Add plot legend in top left.
     ax.legend(title="Output Types", bbox_to_anchor=(1.05, 1), loc='upper left')
 
     # Add total count labels at the end of each bar
@@ -124,15 +138,21 @@ def plot_university_pivot_data(pivot_data):
         total = sum(pivot_data.iloc[i])
         ax.text(total, i, f' Total: {total}', va='center')
 
-    plt.tight_layout() # Fix layout - prevent label cutoff
+    plt.tight_layout() # Tight layout, to fit all info on screen
     plt.show()
     plt.close()
 
 def get_university_pivot_data(cs_outputs_metadata):
+    """
+    Convert the tabular cs output metadata to pivot table to get output counts by university and type
+
+    :param cs_outputs_metadata: Pandas DF representing CS output metadata
+    :return: Pivot table of CS output metadata
+    """
     # Create a new column with grouped output types
     cs_outputs_metadata['Output Category'] = cs_outputs_metadata['Output type'].apply(group_output_type)
 
-    # Create pivot table for the stacked bar chart
+    # Create pivot table for the stacked bar chart - rows are universities, columns are output types, values are output counts
     pivot_data = pd.pivot_table(
         cs_outputs_metadata,
         values='Output type',
@@ -141,12 +161,19 @@ def get_university_pivot_data(cs_outputs_metadata):
         aggfunc='count',
         fill_value=0
     )
-    pivot_data['Total'] = pivot_data.sum(axis=1) # Total outputs for each university
+    pivot_data['Total'] = pivot_data.sum(axis=1) # Total outputs per university
     return pivot_data
 
 def plot_university_output_distribution(cs_outputs_metadata):
+    """
+    Plot stacked bar charts visualising the research output distribution for universities - one for top and other for bottom
+    half of universities based on total outputs
+    :param cs_outputs_metadata: Pandas DF containing CS output metadata
+    :return: None
+    """
     pivot_data = get_university_pivot_data(cs_outputs_metadata)
 
+    # Split unis into two halves based on total output counts
     university_count = len(pivot_data) // 2
 
     top_half_universities_by_output_counts = pivot_data.nlargest(university_count, 'Total')
