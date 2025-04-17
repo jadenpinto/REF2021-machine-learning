@@ -68,6 +68,12 @@ def plot_qq(cs_outputs_enriched_metadata, features):
         plt.title(f'Quantile-Quantile Plot - {feature}')
         plt.grid(True)
         plt.tight_layout()
+
+        qq_plot_for_normality_check_path = os.path.join(
+            os.path.dirname(__file__), "..", FIGURES_DIR, feature + '_qq_plot_normality_check'
+        )
+        plt.savefig(qq_plot_for_normality_check_path)
+
         plt.show()
 
 def statistical_normality_tests(cs_outputs_enriched_metadata, features):
