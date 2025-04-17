@@ -1,3 +1,4 @@
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as stats
@@ -5,6 +6,7 @@ from statsmodels.graphics.gofplots import qqplot
 
 from machine_learning.cs_output_results import get_cs_outputs_enriched_metadata
 from machine_learning.feature_engineering import infer_missing_top_citation_percentile
+from utils.constants import FIGURES_DIR
 
 
 def main():
@@ -27,7 +29,7 @@ def plot_histograms(cs_outputs_enriched_metadata, features):
         data = cs_outputs_enriched_metadata[feature].dropna()
 
         # Plot histogram
-        plt.hist(data, bins='auto', density=True,alpha=0.6, color='g', label='Data')
+        plt.hist(data, bins='auto', density=True,alpha=0.6, color='b', label='Data')
 
         # Overlay normal distribution
         mean = data.mean()
@@ -45,6 +47,12 @@ def plot_histograms(cs_outputs_enriched_metadata, features):
         plt.legend()
         plt.grid(True)
         plt.tight_layout()
+
+        histogram_for_normality_check_path = os.path.join(
+            os.path.dirname(__file__), "..", FIGURES_DIR, feature + '_histogram_normality_check'
+        )
+        plt.savefig(histogram_for_normality_check_path)
+
         plt.show()
 
 
