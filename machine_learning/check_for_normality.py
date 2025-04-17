@@ -124,9 +124,9 @@ def statistical_normality_tests(cs_outputs_enriched_metadata, features):
         for i in range(len(anderson_result.critical_values)):
             sl, cv = anderson_result.significance_level[i], anderson_result.critical_values[i]
             if anderson_result.statistic < anderson_result.critical_values[i]:
-                print(f'{sl:.2f}: {cv:.2f}, data is normal')  # Fail to reject H0
+                print(f'Significance Level of {sl:.2f}: Critical Value = {cv:.2f}, data is normal')  # Fail to reject H0
             else:
-                print(f'{sl:.2f}: {cv:.2f}, data is not normal')  # Reject H0
+                print(f'Significance Level of {sl:.2f}: Critical Value = {cv:.2f}, data is not normal')  # Reject H0
 
 if __name__ == "__main__":
     main()
