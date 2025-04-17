@@ -32,6 +32,7 @@ def check_skewness_total_citations(cs_outputs_enriched_metadata):
     total_citations_col_skew = skew(total_citations_col)
 
     # Plot histogram:
+    plt.figure(figsize=(10, 6)) # Bigger fig size than default, if not used, plot looks too zoomed out
     plt.hist(total_citations_col, bins=300)
     plt.title(f'Distribution of Total Citations \nSkewness = {total_citations_col_skew}')
     plt.xlabel('Total Citations')
