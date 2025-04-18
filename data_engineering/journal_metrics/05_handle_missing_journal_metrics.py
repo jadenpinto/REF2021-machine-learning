@@ -2,16 +2,57 @@ import os
 import pandas as pd
 
 from utils.constants import DATASETS_DIR, PROCESSED_DIR, SNIP, CS_JOURNAL_METRICS, REFINED_DIR, SJR
-
 from utils.dataframe import split_df_on_null_field
 
+def main():
+    """
+    ETL pipeline to fill in missing journal metrics
+    """
+    cs_journal_metrics_df = load_cs_journal_metrics_df()
+    log_null_cs_journal_metadata(cs_journal_metrics_df)
+    """
+    Total number of missing values: [Before handling missing values]
+    ISSN            0
+    Scopus_ID      96
+    SNIP          129
+    SJR           143
+    Cite_Score    143
+    """
+
+    journal_metrics_df_handled_missing_fields = handle_missing_journal_metrics(cs_journal_metrics_df)
+    log_null_cs_journal_metadata(journal_metrics_df_handled_missing_fields)
+    """
+    Total number of missing values: [After handling missing values]
+    ISSN            0
+    Scopus_ID      96
+    SNIP           95
+    SJR           141
+    Cite_Score    143
+    """
+
+    # Explicitly map each column to its correct data-type
+    ensure_uniform_data_types(journal_metrics_df_handled_missing_fields)
+    # Override existing CS_JOURNAL_METRICS file
+    write_journal_metrics_handled_missing_fields_df(journal_metrics_df_handled_missing_fields)
+
+    # Algorithm: Given df -> split into 2, null not null, handle null, rename cols (if needed to match), concat and write
+
+
 def load_cs_journal_metrics_df():
+    """
+    Load the CS CS_Journal_Metrics parquet file
+    :return: Dataframe representing the CS_Journal_Metrics parquet file
+    """
     cs_journal_metrics_df_path = os.path.join(os.path.dirname(__file__), "..", "..", DATASETS_DIR, REFINED_DIR,
                                               CS_JOURNAL_METRICS)
     cs_journal_metrics_df = pd.read_parquet(cs_journal_metrics_df_path, engine='fastparquet')
     return cs_journal_metrics_df
 
 def load_processed_snip_df():
+    """
+    Load the SNIP parquet file
+    :return: Dataframe representing the SNIP parquet file
+    """
     snip_df_path = os.path.join(os.path.dirname(__file__), "..", "..", DATASETS_DIR, PROCESSED_DIR,
                                               SNIP)
     snip_df = pd.read_parquet(snip_df_path, engine='fastparquet')
@@ -116,6 +157,10 @@ def ensure_uniform_data_types(journal_metrics_df_handled_missing_fields):
 
 
 def write_journal_metrics_handled_missing_fields_df(journal_metrics_df_handled_missing_fields):
+    """
+    Write the journal metrics dataframe with missing values filled in as a parquet file
+    :param journal_metrics_df_handled_missing_fields: Journal metrics dataframe with missing values filled in
+    """
     cs_journal_metrics_handled_missing_data_df_path = os.path.join(
         os.path.dirname(__file__), "..", "..", DATASETS_DIR, REFINED_DIR, CS_JOURNAL_METRICS
     )
@@ -125,41 +170,5 @@ def write_journal_metrics_handled_missing_fields_df(journal_metrics_df_handled_m
         engine='fastparquet'
     )
 
-
-cs_journal_metrics_df = load_cs_journal_metrics_df()
-log_null_cs_journal_metadata(cs_journal_metrics_df)
-"""
-ISSN            0
-Scopus_ID      96
-SNIP          129
-SJR           143
-Cite_Score    143
-"""
-
-journal_metrics_df_handled_missing_fields =  handle_missing_journal_metrics(cs_journal_metrics_df)
-log_null_cs_journal_metadata(journal_metrics_df_handled_missing_fields)
-"""
-ISSN            0
-Scopus_ID      96
-SNIP           95
-SJR           141
-Cite_Score    143
-"""
-
-# Explicitly map each column to its correct data-type
-ensure_uniform_data_types(journal_metrics_df_handled_missing_fields)
-# Override existing CS_JOURNAL_METRICS file
-write_journal_metrics_handled_missing_fields_df(journal_metrics_df_handled_missing_fields)
-
-# Given df -> split into 2, null not null, handle null, rename cols (if needed to match), concat and write
-"""
-failed api calls here, for SJR, see if I can obtain from the SJR dataset [Done]
-same for snip which (datasets in downloaded) [Done]
-maybe check if cite-core has information online. [Notes in notion]
-
-[if df just do left join with issn for null cols]
-
-todo
-in another file, create df of unique scopus ids and get metadata about the metrics john asked for [from API]
-see if I can train LLMs to get score [this can be research question]
-"""
+if __name__ == "__main__":
+    main()
