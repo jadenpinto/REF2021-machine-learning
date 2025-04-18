@@ -1,3 +1,16 @@
+"""
+Archived Script
+
+I initially attempted to retrieve the following metrics for journals
+    - FieldWeightedCitationImpact
+    - FieldWeightedViewsImpact
+    - OutputsInTopCitationPercentiles
+
+However, most of these metrics were null. These metrics aren't applicable for journals but instead for individual articles
+See, script at output_metrics/03_scival_publication_API.py for how the SciVal API is used to fetch the above metrics for
+journal articles
+"""
+
 import os
 import requests
 import pandas as pd
@@ -180,71 +193,4 @@ count_citation_metrics(scopus_id_df, "FieldWeightedCitationImpact")
 """
 Scopus ID of the publication where FieldWeightedCitationImpact exists = 29954
 The number of journals containing OutputsInTopCitationPercentiles field = 1 (out of 1187 journals)
-"""
-
-
-# todo:
-# count_views_metrics(scopus_id_df.head(1))
-
-"""
-def extract_citation_data(data):
-    if not data:
-        return
-
-    if "results" not in data:
-        return
-    results = data["results"]
-    if not results:
-        return
-
-    results = data["results"][0]
-
-    if "metrics" not in results:
-        return
-    metrics = results["metrics"]
-    if not metrics:
-        return
-
-    FieldWeightedCitationImpact, OutputsInTopCitationPercentiles = metrics[0], metrics[1]
-    if not FieldWeightedCitationImpact or not OutputsInTopCitationPercentiles:
-        return
-
-    OutputsInTopCitationPercentiles_values = OutputsInTopCitationPercentiles["values"][0]
-    valueByYear = OutputsInTopCitationPercentiles_values["valueByYear"]
-
-    for k,v in valueByYear.items():
-        if v!=None:
-            print(k, v, data["results"][0]["publication"]["id"])
-
-    # return valueByYear
-
-
-# print(cs_journal_metrics_df.shape)
-# print(cs_journal_metrics_df.head().to_string())
-# print(cs_journal_metrics_df.isna().sum())
-
-# x = cs_journal_metrics_df[
-#         ~cs_journal_metrics_df['Scopus_ID'].isna()
-#     ]
-# # print(x.shape)
-# print(x.head(10).to_string())
-
-
-#cs_journal_metrics_df = process_journal_metrics()
-#write_cs_journal_metrics_df(cs_journal_metrics_df)
-
-
-# get_journal_citation_metadata(27433)
-
-# Tried all records
-# Only printed: 2023 0 29954
-"""
-
-
-
-
-# todo -> make requests for the latest
-"""
-These are articles and not journals:
-https://api.elsevier.com/analytics/scival/publication/metrics?metricTypes=FieldWeightedViewsImpact&publicationIds=85047328215&showAsFieldWeighted=true&apiKey=7f59af901d2d86f78a1fd60c1bf9426a&byYear=false&httpAccept=application/json
 """
