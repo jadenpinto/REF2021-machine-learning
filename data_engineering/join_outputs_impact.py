@@ -93,19 +93,4 @@ Wireless Communications and Mobile Computing -> 0.445 (as of 2022)
 Advanced Intelligent Systems -> No Data
 """
 
-"""
-REF Timetable (https://2021.ref.ac.uk/about-the-ref/timetable/index.html)
-- 31 December 2020: End of publication period (cut-off point for publication of research outputs)
-- May 2021 – February 2022 Panels assess submissions
-
-So it's fair to assume most were assessed in 2021:
-- downloaded SJR data for 2021.
-- filter SNIP for 2021 too
-
-Use the score for the year in which the assessment was carried out on the outputs
-
-raw/SCImago_Journal_Rank
-processed in processed: processed/SCImago_Journal_Rank
-"""
-
-# todo in future maybe only one function for the joining passing in either all outputs or just journal
+# I believe this script is archived as the API was used instead.
