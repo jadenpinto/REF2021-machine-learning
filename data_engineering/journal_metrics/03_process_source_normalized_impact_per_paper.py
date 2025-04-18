@@ -3,6 +3,11 @@ import pandas as pd
 
 from utils.constants import DATASETS_DIR, PROCESSED_DIR, RAW_DIR, SOURCE_NORMALIZED_IMPACT_PER_PAPER, SNIP
 
+def main():
+    snip_df = load_snip_df()
+    processed_snip_df = process_snip_df(snip_df)
+    write_snip_df(processed_snip_df)
+
 def load_snip_df():
     snip_dataset_path = os.path.join(os.path.dirname(__file__), "..", "..", DATASETS_DIR, RAW_DIR,
                                           SOURCE_NORMALIZED_IMPACT_PER_PAPER)
@@ -30,6 +35,5 @@ def write_snip_df(snip_df):
 
     snip_df.to_parquet(snip_df_path, engine='fastparquet')
 
-snip_df = load_snip_df()
-processed_snip_df = process_snip_df(snip_df)
-write_snip_df(processed_snip_df)
+if __name__ == "__main__":
+    main()
