@@ -59,12 +59,20 @@ def load_processed_snip_df():
     return snip_df
 
 def load_sjr_df():
+    """
+    Load the SJR parquet file
+    :return: Pandas dataframe of the SJR-ISSN values
+    """
     processed_sjr_csv_path = os.path.join(os.path.dirname(__file__), "..", "..", DATASETS_DIR, PROCESSED_DIR,
                                           SJR)
     sjr_df = pd.read_parquet(processed_sjr_csv_path, engine='fastparquet')
     return sjr_df
 
 def log_null_cs_journal_metadata(loaded_cs_journal_metrics_df):
+    """
+    Log the number of missing values in the CS journal metrics DF
+    :param loaded_cs_journal_metrics_df: Pandas dataframe containing journal metrics
+    """
     print("CS journal metadata fields with null counts:")
     print(loaded_cs_journal_metrics_df.isna().sum())
 
@@ -83,6 +91,11 @@ def log_null_cs_journal_metadata(loaded_cs_journal_metrics_df):
     # In such records, SNIPList (and other fields like SJRList and citeScoreYearInfoList) either absent or set to null
 
 def handle_null_sjr(journal_metrics_df):
+    """
+    Handle the missing SJE values - fill in using the SJR dataset
+    :param journal_metrics_df: Journal metrics dataframe containing missing SJR values
+    :return: Journal metrics dataframe with missing SJR handled
+    """
     null_sjr_journal_metrics_df, not_null_sjr_journal_metrics_df = split_df_on_null_field(journal_metrics_df, 'SJR')
 
     # Drop SJR from the null_sjr_df: [here SJR=null for all records, we try to obtain this by joining]
@@ -104,6 +117,11 @@ def handle_null_sjr(journal_metrics_df):
     return journal_metrics_handled_null_sjr_df
 
 def handle_null_snip(journal_metrics_df):
+    """
+    Handle the missing SNIP values - fill in using the SNIP dataset
+    :param journal_metrics_df: Journal metrics dataframe containing missing SNIP values
+    :return: Journal metrics dataframe with missing SNIP handled
+    """
     null_snip_journal_metrics_df, not_null_snip_journal_metrics_df = split_df_on_null_field(journal_metrics_df, 'SNIP')
 
     # Drop SNIP column from the null SNIP DF. SNIP values will be retrieved by performing join with SNIP DF
@@ -124,6 +142,11 @@ def handle_null_snip(journal_metrics_df):
 
 
 def handle_missing_journal_metrics(journal_metrics_df):
+    """
+    Handle missing values in the journal metrics
+    :param journal_metrics_df: Journal metrics dataframes with missing values
+    :return: Journal metrics dataframes with missing values handled
+    """
     journal_metrics_df_handled_missing_fields = handle_null_sjr(journal_metrics_df)
     journal_metrics_df_handled_missing_fields = handle_null_snip(journal_metrics_df_handled_missing_fields)
     return journal_metrics_df_handled_missing_fields
