@@ -4,6 +4,9 @@ import pandas as pd
 from utils.constants import DATASETS_DIR, PROCESSED_DIR, CS_OUTPUTS_METADATA, REFINED_DIR, CS_CITATION_METRICS
 from utils.dataframe import split_df_on_null_field
 
+def main():
+    process_missing_citations()
+
 def get_cs_outputs_metadata():
     cs_outputs_metadata_path = os.path.join(
         os.path.dirname(__file__), "..", "..", DATASETS_DIR, PROCESSED_DIR, CS_OUTPUTS_METADATA
@@ -83,5 +86,5 @@ def process_missing_citations():
 
     write_handled_missing_citations_df(cs_citation_metadata_df)
 
-
-process_missing_citations()
+if __name__ == "__main__":
+    main()
