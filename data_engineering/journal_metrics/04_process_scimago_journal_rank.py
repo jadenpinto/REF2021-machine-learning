@@ -98,16 +98,31 @@ def log_records_issn_len_not_eight(sjr_df):
     )
 
 def handle_sjr_issn(sjr_df):
+    """
+    Transform the raw SJR DF so that it is ready to be joined with the REF submissions
+    :param sjr_df: Raw SJR pandas dataframe
+    :return: Transformed SJR pandas dataframe
+    """
     sjr_df = drop_null_issn(sjr_df)
     sjr_df = normalise_to_1nf(sjr_df)
     sjr_df = add_hyphen_issn(sjr_df)
     return sjr_df
 
 def drop_null_issn(sjr_df):
+    """
+    Drop records where the ISSN is invalid
+    :param sjr_df: SJR DF with null ISSN values
+    :return: SJR DF with null ISSN values removed
+    """
     sjr_df = delete_rows_by_values(sjr_df, "Issn", ["-"])
     return sjr_df
 
 def normalise_to_1nf(sjr_df):
+    """
+    Normalise the SJR DF - split records containing multiple ISSNs such that there is one ISSN per row
+    :param sjr_df: Non normalised SJR DF
+    :return: SJR DF in the first normal form
+    """
     sjr_df = sjr_df.assign(
         Issn=sjr_df['Issn'].str.split(', ')
     ).explode('Issn')
@@ -115,6 +130,11 @@ def normalise_to_1nf(sjr_df):
     return sjr_df
 
 def add_hyphen_issn(sjr_df):
+    """
+    Update the ISSN values to include a hyphen in between
+    :param sjr_df: SJR DF where ISSN have no hyphens
+    :return: SJR DF where ISSN have hyphens added
+    """
     sjr_df['Issn'] = sjr_df['Issn'].apply(
         lambda issn_str: issn_str[:4] + '-' + issn_str[4:]
     )
@@ -122,12 +142,19 @@ def add_hyphen_issn(sjr_df):
     return sjr_df
 
 def write_processed_sjr(sjr_df):
+    """
+    Write the SJR DF as a parquet file
+    :param sjr_df: Transformed SJR DF
+    """
     processed_sjr_path = os.path.join(os.path.dirname(__file__), "..", "..", DATASETS_DIR, PROCESSED_DIR,
                                            SJR)
 
     sjr_df.to_parquet(processed_sjr_path, engine='fastparquet')
 
 def process_sjr_impact_factor():
+    """
+    ETL pipeline to process the SJR impact factor
+    """
     sjr_df = read_sjr_dataset()
 
     sjr_df = filter_sjr_columns(sjr_df)
