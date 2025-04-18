@@ -4,8 +4,22 @@ import pandas as pd
 from utils.constants import DATASETS_DIR, RAW_DIR, PROCESSED_DIR, SCIMAGO_JOURNAL_RANK, SJR
 from utils.dataframe import log_dataframe, delete_rows_by_values, log_null_values
 
+def main():
+    """
+    ETL pipeline to process SJR from raw to processed directory:
+        - Filter for relevant columns
+        - Log journals with null SJRs
+        - Log the different ISSN lengths, and check how many are not equal to 8
+        - Normalise records containing multiple ISSNs
+    :return: None
+    """
+    process_sjr_impact_factor()
 
 def read_sjr_dataset():
+    """
+    Read and log the SJR CSV dataset as a pandas dataframe
+    :return: Pandas dataframe of SJR values
+    """
     # Path to SCImago journal rank file
     sjr_dataset_path = os.path.join(os.path.dirname(__file__), "..", "..", DATASETS_DIR, RAW_DIR, SCIMAGO_JOURNAL_RANK)
 
@@ -26,18 +40,33 @@ def read_sjr_dataset():
         print("An error occurred while reading the file:", str(e))
 
 def filter_sjr_columns(sjr_df):
+    """
+    SJR dataframe has multiple columns, filter for necessary ones
+    :param sjr_df: Original raw SJR dataframe
+    :return: SJR dataframe with filtered columns
+    """
     sjr_columns = ['Rank', 'Title', 'Issn', 'SJR']
 
     sjr_df = sjr_df[sjr_columns]
     return sjr_df
 
 def log_issn_lengths(sjr_df):
+    """
+    Log the different ISSN lengths
+    :param sjr_df: SJR dataframe
+    :return:  Noen
+    """
     issn_lengths = sjr_df['Issn'].astype(str).apply(len)
     unique_issn_lengths = sorted(issn_lengths.unique())
 
     print(f"Possible Lengths of ISSNs in SJR dataframe={unique_issn_lengths}")
 
 def log_records_issn_len_not_eight(sjr_df):
+    """
+    Visualise all records where the ISSN length is not the expected value of eight
+    :param sjr_df: Pandas SJR dataframe
+    :return: None
+    """
     # Log records where the ISSN length is not eight i.e. ISSN length is 1 or 18
 
     # Create a temporary column to store the length of each Issn
@@ -113,4 +142,5 @@ def process_sjr_impact_factor():
     # Write:
     write_processed_sjr(sjr_df)
 
-process_sjr_impact_factor()
+if __name__ == "__main__":
+    main()
