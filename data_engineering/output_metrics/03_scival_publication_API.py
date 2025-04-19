@@ -151,8 +151,8 @@ check_api_quota(
 
 
 """
-aa_df = load_cs_output_metrics_df()
-print(aa_df.isna().sum())
+cs_output_metrics_df = load_cs_output_metrics_df()
+print(cs_output_metrics_df.isna().sum())
 
 # Before handling failed API calls:
 
@@ -162,7 +162,7 @@ field_weighted_views_impact       1273
 scopus_id                            0
 dtype: int64
 
-# After retrying failed API calls
+# After retrying failed API calls:
 field_weighted_citation_impact       0
 top_citation_percentile           2410
 field_weighted_views_impact          0
