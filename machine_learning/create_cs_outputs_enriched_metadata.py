@@ -6,9 +6,10 @@ from utils.constants import DATASETS_DIR, PROCESSED_DIR, CS_OUTPUTS_METADATA, RE
 
 def main():
     """
-    Dataframe of CS outputs with complete metadata (Include all available features - that are sensible)
+    ETL to create dataframe of CS outputs with complete metadata (Include all available features - that are sensible)
 
-    :return: None
+    This file contains all possible metadata about a given output.
+    It can be read to create different variations of parameters to feed the ML model =>  feature engineering file.
     """
     cs_outputs_enriched_metadata = create_cs_outputs_enriched_metadata()
     write_cs_outputs_enriched_metadata(cs_outputs_enriched_metadata)
@@ -105,13 +106,6 @@ def create_cs_outputs_enriched_metadata():
 
     cs_outputs_enriched_metadata = enrich_cs_outputs_metadata(cs_outputs_metadata)
 
-    # todo - Optionally drop duplicates. Not a big deal only off by one. Do this and rewrite file if causes issues.
-    """
-    print(cs_outputs_enriched_metadata.shape) # (7296, 37)
-    cs_outputs_enriched_metadata = cs_outputs_enriched_metadata.drop_duplicates()
-    print(cs_outputs_enriched_metadata.shape) # (7295, 37)
-    """
-
     return cs_outputs_enriched_metadata
 
 def write_cs_outputs_enriched_metadata(cs_outputs_enriched_metadata):
@@ -127,13 +121,3 @@ def write_cs_outputs_enriched_metadata(cs_outputs_enriched_metadata):
 
 if __name__ == "__main__":
     main()
-
-"""
-possibly include all features here and write as parquet. => In datasets/ML. [0.cs_outputs_metadata]
-This file should represent all possible metadata about a given output.
-Then you can read this file and create different variations of it, in feature engineering file.
-
-Maybe in feature engineering create multiple files from 0.cs_outputs_metadata to see which works best.
-like one including everything, one for only citations, only for only journal metrics
-another for citations + 1 type of metrics [3 such DFs for every type of metrics] 
-"""
