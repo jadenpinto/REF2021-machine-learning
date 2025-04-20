@@ -22,7 +22,7 @@ def get_cs_scopus_id_df():
     cs_scopus_id_df = cs_citation_metadata_df[["scopus_id"]].drop_duplicates().dropna() # (6259, 1)
     return cs_scopus_id_df
 
-def get_output_metadata(scopus_id): # FieldWeightedCitationImpact & OutputsInTopCitationPercentiles
+def get_output_metadata(scopus_id): # Retrieve Field Weighted Publication metrics
     output_metadata_base_url = "https://api.elsevier.com/analytics/scival/publication/metrics"
     output_metadata_url_params = {
         "metricTypes": "FieldWeightedCitationImpact,OutputsInTopCitationPercentiles,FieldWeightedViewsImpact",
