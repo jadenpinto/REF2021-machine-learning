@@ -116,11 +116,9 @@ def load_cs_output_metrics_df():
 
 def retry_process_output_metrics():
     """
-    Running process_output_metrics() initially gave me a rate limit exceeded error.
-    So this method is run when my API limits reset to process the failed records
-    Making calls to the SciVal Publication API and rewriting to CS_Output_Metrics.parquet file
-
-    :return:
+    Running process_output_metrics() initially threw a rate limit exceeded error after a few successful requests
+    So this method is run when the API limits are reset to process the failed records
+    It makes calls to the SciVal Publication API for failed requests and rewrites to CS_Output_Metrics.parquet file
     """
     original_cs_output_metrics_df = load_cs_output_metrics_df()
 
@@ -128,7 +126,7 @@ def retry_process_output_metrics():
     succeeded_scival_api_df = original_cs_output_metrics_df[~records_with_failed_api_calls]
     failed_scival_api_df = original_cs_output_metrics_df[records_with_failed_api_calls]
 
-    failed_cs_scopus_id_df = failed_scival_api_df[["scopus_id"]].drop_duplicates().dropna()  # (1273, 1)
+    failed_cs_scopus_id_df = failed_scival_api_df[["scopus_id"]].drop_duplicates().dropna() # 1273 records failed
     retried_cs_output_metrics_df = process_output_metrics(failed_cs_scopus_id_df)
 
     updated_cs_output_metrics_df = pd.concat([succeeded_scival_api_df, retried_cs_output_metrics_df])
