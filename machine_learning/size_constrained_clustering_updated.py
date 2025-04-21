@@ -200,7 +200,7 @@ class DeterministicAnnealing:
 
         # Calculate the sum using epsilon (small value) to avoid division by zero
         sum_term = np.sum(np.multiply(exp_term, eta_repmat), axis=1).reshape((-1, 1))
-        epsilon = 1e-10
+        epsilon = 1e-8 # 10 ^ -8 = 0.00000001
         sum_term = np.maximum(sum_term, epsilon)  # Ensures division by zero doesn't take place
 
         divider = exp_term / sum_term
@@ -220,7 +220,7 @@ class DeterministicAnnealing:
         factor = np.multiply(exp_term, eta_repmat)
 
         # Define epsilon (small value) to avoid division by zero
-        epsilon = 1e-10
+        epsilon = 1e-8 # 10 ^ -8 = 0.00000001
         sum_factor = np.sum(factor, axis=1).reshape((-1, 1))
         sum_factor = np.maximum(sum_factor, epsilon)  # Ensures division by zero doesn't take place
 
@@ -233,7 +233,7 @@ class DeterministicAnnealing:
         p_y = np.sum(gibbs * demands_prob, axis=0)  # n_cluster,
 
         # Define epsilon (small value) to avoid division by zero
-        epsilon = 1e-10
+        epsilon = 1e-8 # 10 ^ -8 = 0.00000001
         p_y = np.maximum(p_y, epsilon)  # Ensures division by zero doesn't take place
 
         p_y_repmat = np.tile(p_y.reshape(-1, 1), (1, n_features))
