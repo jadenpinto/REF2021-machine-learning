@@ -196,19 +196,18 @@ class DeterministicAnnealing:
         n_points, n_centers = distance_matrix.shape
         eta_repmat = np.tile(np.asarray(eta).reshape(1, -1), (n_points, 1))
 
-        # Adding a small epsilon to avoid numerical instability
         exp_term = np.exp(-self.beta * distance_matrix)
 
-        # Calculate the sum with a small epsilon to avoid division by zero
+        # Calculate the sum using epsilon (small value) to avoid division by zero
         sum_term = np.sum(np.multiply(exp_term, eta_repmat), axis=1).reshape((-1, 1))
         epsilon = 1e-10
-        sum_term = np.maximum(sum_term, epsilon)  # Ensure we don't divide by zero
+        sum_term = np.maximum(sum_term, epsilon)  # Ensures division by zero doesn't take place
 
         divider = exp_term / sum_term
 
-        # Also add protection in the denominator here
+        # If denominator is 0, make it epsilon (small value)
         denominator = np.sum(divider * demands_prob, axis=0)
-        denominator = np.maximum(denominator, epsilon)  # Ensure we don't divide by zero
+        denominator = np.maximum(denominator, epsilon)  # Ensures division by zero doesn't take place
 
         eta = np.divide(np.asarray(self.lamb), denominator)
 
@@ -220,10 +219,10 @@ class DeterministicAnnealing:
         exp_term = np.exp(-self.beta * distance_matrix)
         factor = np.multiply(exp_term, eta_repmat)
 
-        # Add small epsilon to avoid division by zero
+        # Define epsilon (small value) to avoid division by zero
         epsilon = 1e-10
         sum_factor = np.sum(factor, axis=1).reshape((-1, 1))
-        sum_factor = np.maximum(sum_factor, epsilon)  # Ensure we don't divide by zero
+        sum_factor = np.maximum(sum_factor, epsilon)  # Ensures division by zero doesn't take place
 
         gibbs = factor / sum_factor
         return gibbs
@@ -233,9 +232,9 @@ class DeterministicAnnealing:
         divide_up = gibbs.T.dot(X * demands_prob)  # n_cluster, n_features
         p_y = np.sum(gibbs * demands_prob, axis=0)  # n_cluster,
 
-        # Add small epsilon to avoid division by zero
+        # Define epsilon (small value) to avoid division by zero
         epsilon = 1e-10
-        p_y = np.maximum(p_y, epsilon)  # Ensure we don't divide by zero
+        p_y = np.maximum(p_y, epsilon)  # Ensures division by zero doesn't take place
 
         p_y_repmat = np.tile(p_y.reshape(-1, 1), (1, n_features))
         centers = np.divide(divide_up, p_y_repmat)
