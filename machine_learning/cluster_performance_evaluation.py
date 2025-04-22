@@ -64,6 +64,7 @@ def compute_clustering_accuracy(
 
     predictions = len(predicted_high_scoring_output_percentages)
     for prediction in range(predictions):
+        # To avoid dividing by 0, if the actual high scoring percentage is 0, use the low scoring percentages instead.
         if actual_high_scoring_output_percentages[prediction] == 0:
             mape_values.append(
                 abs((actual_low_scoring_output_percentage[prediction] - predicted_low_scoring_output_percentage[prediction]) / actual_low_scoring_output_percentage[prediction]) * 100
