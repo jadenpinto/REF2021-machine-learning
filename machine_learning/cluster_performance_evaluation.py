@@ -126,7 +126,7 @@ def kl_divergence(prob_distribution_a, prob_distribution_b):
     possible_outcomes = len(prob_distribution_a)
 
     # Add small epsilon to avoid division by zero or ln(0)
-    epsilon = 1e-10
+    epsilon = 1e-8 # 10 ^ -8 = 0.00000001
 
     total_kl_divergence = 0
     for i in range(possible_outcomes):
