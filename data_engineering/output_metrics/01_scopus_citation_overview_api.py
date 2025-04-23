@@ -6,6 +6,15 @@ from dotenv import load_dotenv
 
 from utils.constants import DATASETS_DIR, PROCESSED_DIR, CS_OUTPUTS_METADATA, REFINED_DIR, CS_CITATION_METRICS
 
+def main():
+    configure()
+
+    global elsevier_api_key
+    elsevier_api_key = os.getenv('elsevier_api_key')
+
+    cs_citation_metadata_df = process_citation_metadata()
+    write_cs_citation_metadata_df(cs_citation_metadata_df)
+
 
 def configure():
     load_dotenv()
@@ -119,8 +128,6 @@ def write_cs_citation_metadata_df(cs_citation_metadata_df):
 
     cs_citation_metadata_df.to_parquet(cs_citation_metadata_df_path, engine='fastparquet')
 
-configure()
-elsevier_api_key = os.getenv('elsevier_api_key')
 
-cs_citation_metadata_df = process_citation_metadata()
-write_cs_citation_metadata_df(cs_citation_metadata_df)
+if __name__ == "__main__":
+    main()
