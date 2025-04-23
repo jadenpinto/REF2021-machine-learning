@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 # Path to project root
-project_root = Path(__file__).resolve().parent.parent
+project_root = Path(__file__).resolve().parent.parent.parent
 # Path to script containing functions to test
 module_path = project_root / "data_engineering" / "journal_metrics" / "02_scopus_serial_title_API.py"
 # Rename module so it does not start with a number

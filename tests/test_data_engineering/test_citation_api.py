@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 # Path to project root
-project_root = Path(__file__).resolve().parent.parent
+project_root = Path(__file__).resolve().parent.parent.parent
 # Path to script containing functions to test
 module_path = project_root / "data_engineering" / "output_metrics" / "01_scopus_citation_overview_api.py"
 # Rename module so it does not start with a number
