@@ -36,10 +36,11 @@ def test_extract_citation_metadata():
     assert isinstance(actual_extracted_citation_metrics, dict)
     assert expected_extracted_citation_metrics == actual_extracted_citation_metrics
 
+def test_extract_empty_citation_metrics():
+    assert extract_citation_metadata({}) == {}
 
-
-
-
+def test_extract_citation_metadata_with_none():
+    assert extract_citation_metadata(None) == {}
 
 
 
