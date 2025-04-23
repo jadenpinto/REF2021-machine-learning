@@ -19,6 +19,28 @@ from dotenv import load_dotenv
 
 from utils.constants import DATASETS_DIR, PROCESSED_DIR, CS_JOURNALS_ISSN, REFINED_DIR, CS_JOURNAL_METRICS
 
+
+def main():
+    configure()
+
+    global elsevier_api_key
+    elsevier_api_key = os.getenv('elsevier_api_key')
+
+    cs_journal_metrics_df = load_cs_journal_metrics_df()
+    scopus_id_df = get_valid_scopus_id_df(cs_journal_metrics_df)
+
+    count_citation_metrics(scopus_id_df, "OutputsInTopCitationPercentiles")
+    """
+    Scopus ID of the publication where OutputsInTopCitationPercentiles exists = 29954
+    The number of journals containing OutputsInTopCitationPercentiles field = 1 (out of 1187 journals)
+    """
+
+    count_citation_metrics(scopus_id_df, "FieldWeightedCitationImpact")
+    """
+    Scopus ID of the publication where FieldWeightedCitationImpact exists = 29954
+    The number of journals containing OutputsInTopCitationPercentiles field = 1 (out of 1187 journals)
+    """
+
 def configure():
     load_dotenv()
 
@@ -177,20 +199,5 @@ def count_views_metrics(scopus_id_df):
     print(f"The number of journals containing FieldWeightedViewsImpact field = {view_metric_count} (out of {scopus_id_df.shape[0]} journals)")
 
 
-configure()
-elsevier_api_key = os.getenv('elsevier_api_key')
-
-cs_journal_metrics_df = load_cs_journal_metrics_df()
-scopus_id_df = get_valid_scopus_id_df(cs_journal_metrics_df)
-
-count_citation_metrics(scopus_id_df, "OutputsInTopCitationPercentiles")
-"""
-Scopus ID of the publication where OutputsInTopCitationPercentiles exists = 29954
-The number of journals containing OutputsInTopCitationPercentiles field = 1 (out of 1187 journals)
-"""
-
-count_citation_metrics(scopus_id_df, "FieldWeightedCitationImpact")
-"""
-Scopus ID of the publication where FieldWeightedCitationImpact exists = 29954
-The number of journals containing OutputsInTopCitationPercentiles field = 1 (out of 1187 journals)
-"""
+if __name__ == "__main__":
+    main()
