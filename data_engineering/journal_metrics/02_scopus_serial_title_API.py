@@ -6,6 +6,15 @@ from dotenv import load_dotenv
 
 from utils.constants import DATASETS_DIR, PROCESSED_DIR, CS_JOURNALS_ISSN, REFINED_DIR, CS_JOURNAL_METRICS
 
+def main():
+    configure()
+
+    global elsevier_api_key
+    elsevier_api_key = os.getenv('elsevier_api_key')
+
+    cs_journal_metrics_df = process_journal_metrics()
+    write_cs_journal_metrics_df(cs_journal_metrics_df)
+
 def configure():
     load_dotenv()
 
@@ -114,9 +123,6 @@ def write_cs_journal_metrics_df(cs_journal_metrics_df):
 
     cs_journal_metrics_df.to_parquet(cs_journal_metrics_df_path, engine='fastparquet')
 
-configure()
-elsevier_api_key = os.getenv('elsevier_api_key')
 
-cs_journal_metrics_df = process_journal_metrics()
-write_cs_journal_metrics_df(cs_journal_metrics_df)
-
+if __name__ == "__main__":
+    main()
