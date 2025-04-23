@@ -2,7 +2,7 @@ import pytest
 import pandas as pd
 from unittest.mock import patch
 
-from machine_learning.clustering_one import infer_cluster_labels
+from machine_learning.clustering_one import infer_cluster_labels, get_actual_output_score_percentages, get_predicted_output_score_percentages
 
 @pytest.fixture
 def cluster_training_data():
@@ -46,4 +46,25 @@ def test_infer_cluster_labels(mock_get_high_scoring_universities, cluster_traini
 
     assert actual_cluster_labels_dict == expected_cluster_labels_dict
 
+
+def test_get_actual_output_score_percentages():
+    # high = 40 / (40+80) * 100
+    # low = 80 / (40+80) * 100
+    high, low = get_actual_output_score_percentages(40, 80)
+    assert round(high, 3) == 33.333
+    assert round(low, 3) == 66.667
+
+def test_get_actual_output_score_percentages_all_high():
+    high, low = get_actual_output_score_percentages(3, 0)
+    assert high == 100.0
+    assert low == 0.0
+
+def test_get_actual_output_score_percentages_all_low():
+    high, low = get_actual_output_score_percentages(0, 30)
+    assert high == 0.0
+    assert low == 100.0
+
+def test_get_actual_output_score_percentages_no_outputs():
+    with pytest.raises(ZeroDivisionError):
+        get_actual_output_score_percentages(0, 0)
 
