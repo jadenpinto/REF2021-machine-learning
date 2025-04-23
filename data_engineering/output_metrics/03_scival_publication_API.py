@@ -7,6 +7,43 @@ from utils.constants import DATASETS_DIR, REFINED_DIR, CS_CITATION_METRICS, CS_O
 from utils.API import check_api_quota
 
 
+def main():
+    configure()
+
+    global elsevier_api_key
+    elsevier_api_key = os.getenv('elsevier_api_key')
+
+    cs_scopus_id_df = get_cs_scopus_id_df()
+    cs_output_metrics_df = process_output_metrics(cs_scopus_id_df)
+    write_cs_output_metrics_df(cs_output_metrics_df)
+
+    retry_process_output_metrics()
+
+    check_api_quota(
+        elsevier_api_key,
+        "https://api.elsevier.com/analytics/scival/publication/metrics?metricTypes=FieldWeightedCitationImpact&publicationIds=85021243138"
+    )
+
+    """
+    cs_output_metrics_df = load_cs_output_metrics_df()
+    print(cs_output_metrics_df.isna().sum())
+
+    # Before handling failed API calls:
+
+    field_weighted_citation_impact    1273
+    top_citation_percentile           3212
+    field_weighted_views_impact       1273
+    scopus_id                            0
+    dtype: int64
+
+    # After retrying failed API calls:
+    field_weighted_citation_impact       0
+    top_citation_percentile           2410
+    field_weighted_views_impact          0
+    scopus_id                            0
+    dtype: int64
+    """
+
 def configure():
     load_dotenv()
 
@@ -133,42 +170,5 @@ def retry_process_output_metrics():
     write_cs_output_metrics_df(updated_cs_output_metrics_df)
 
 
-configure()
-elsevier_api_key = os.getenv('elsevier_api_key')
-
-cs_scopus_id_df = get_cs_scopus_id_df()
-cs_output_metrics_df = process_output_metrics(cs_scopus_id_df)
-write_cs_output_metrics_df(cs_output_metrics_df)
-
-retry_process_output_metrics()
-
-check_api_quota(
-    elsevier_api_key,
-    "https://api.elsevier.com/analytics/scival/publication/metrics?metricTypes=FieldWeightedCitationImpact&publicationIds=85021243138"
-)
-
-
-"""
-cs_output_metrics_df = load_cs_output_metrics_df()
-print(cs_output_metrics_df.isna().sum())
-
-# Before handling failed API calls:
-
-field_weighted_citation_impact    1273
-top_citation_percentile           3212
-field_weighted_views_impact       1273
-scopus_id                            0
-dtype: int64
-
-# After retrying failed API calls:
-field_weighted_citation_impact       0
-top_citation_percentile           2410
-field_weighted_views_impact          0
-scopus_id                            0
-dtype: int64
-
-Even the error logs were 1273 lines
-[including: Error fetching data: HTTPSConnectionPool(host='api.elsevier.com', port=443): Read timed out. (read timeout=10)]
-it's in seconds - can set it to 100 to be safer
-^ Besides failed API, I got this time out error. Fixed by setting timeout to 100s instead of 10s
-"""
+if __name__ == "__main__":
+    main()
