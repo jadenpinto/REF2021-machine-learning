@@ -2,7 +2,7 @@ import pytest
 import pandas as pd
 from pandas.testing import assert_frame_equal
 
-from machine_learning.cs_output_results import enhance_score_distribution, log_high_low_scoring_universities
+from machine_learning.cs_output_results import enhance_score_distribution, log_high_low_scoring_universities, get_high_scoring_universities, log_university_count, filter_ref_outputs_for_cs
 
 @pytest.fixture
 def input_data_frames():
@@ -67,16 +67,68 @@ def test_enhance_score_distribution(input_data_frames):
 
 def test_log_high_low_scoring_universities(capfd):
     # Two universities 10007783, 10007856 which have 0 low scoring outputs and 7, 8 high scoring ones, respectively
-    data = pd.DataFrame({
+    enhanced_results_df = pd.DataFrame({
         'Institution code (UKPRN)': [10007783, 10007856],
         'high_scoring_outputs': [7, 8],
         'low_scoring_outputs': [0, 0]
     })
 
     # Call the function to log number of high and low scoring universities using the enhanced dataframe
-    log_high_low_scoring_universities(data)
+    log_high_low_scoring_universities(enhanced_results_df)
     # Capture standard output
     out, err = capfd.readouterr()
 
     assert "Number of universities where all CS outputs were scored low = 0" in out
     assert "Number of universities where all CS outputs were scored high = 2" in out
+
+def test_get_high_scoring_universities():
+    # Dataframe with 5 universities, 2 of which only have high scoring outputs - 10007856, 10007857
+    enhanced_results_df = pd.DataFrame({
+        'Institution code (UKPRN)': [10007783, 10007856, 10007857, 10007858, 10007859],
+        'high_scoring_outputs': [10, 5, 32, 0, 13],
+        'low_scoring_outputs': [2, 0, 0, 13, 15]
+    })
+
+    # Obtain DF containing the high scoring universities
+    actual_high_scoring_universities_df = get_high_scoring_universities(enhanced_results_df)
+    # Sort by their UKPRN
+    actual_high_scoring_universities_df_sorted = actual_high_scoring_universities_df.sort_values(
+        by='Institution code (UKPRN)').reset_index(drop=True)
+
+    # Expected dataframe of high scoring universities, sorted by UKPRN
+    expected_high_scoring_universities_df = pd.DataFrame({
+        'Institution code (UKPRN)': [10007856, 10007857]
+    }).sort_values(by='Institution code (UKPRN)').reset_index(drop=True)
+
+    assert_frame_equal(actual_high_scoring_universities_df_sorted, expected_high_scoring_universities_df)
+
+def test_log_university_count(capfd):
+    # Dataframe of university results, for two universities
+    cs_output_results_df = pd.DataFrame({
+        'Institution code (UKPRN)': [10007856, 10007857]
+    })
+
+    # Function to log university count
+    log_university_count(cs_output_results_df)
+    # Capture standard output
+    out, err = capfd.readouterr()
+
+    assert "The total number of universities who have submitted CS outputs to REF2021: 2" in out
+
+
+def test_filter_ref_outputs_for_cs():
+    # Results from 4 universities two of which are for the outputs profile (10007856, 10007857)
+    cs_results_df = pd.DataFrame({
+        'Institution code (UKPRN)': [10007856, 10000001, 10007857, 10000002],
+        'Profile': ['Outputs', 'Impact', 'Outputs', 'Environment'],
+    })
+
+    # Results dataframe filtered to retain Outputs result and drop any Impact or Environment results
+    expected_cs_output_results_df = pd.DataFrame({
+        'Institution code (UKPRN)': [10007856, 10007857],
+        'Profile': ['Outputs', 'Outputs']
+    }).reset_index(drop=True)
+
+    actual_cs_output_results_df = filter_ref_outputs_for_cs(cs_results_df).reset_index(drop=True)
+
+    assert_frame_equal(actual_cs_output_results_df, expected_cs_output_results_df)
