@@ -10,7 +10,6 @@ def input_data_frames():
     Input dataframes function returning:
         1. CS output results dataframe [Results of each university - distributed across output level quality scores]
         2. CS Outputs enriched metadata [Includes CS outputs with complete metadata]
-
     """
     # Specify results dataframe, with 2 universities
     # Uni 1, 10007783. Distribution: 50%, 20%, 30%, 0%, 0%
@@ -67,8 +66,7 @@ def test_enhance_score_distribution(input_data_frames):
     )
 
 def test_log_high_low_scoring_universities(capfd):
-
-    # 2 universities 10007783, 10007856 which have 0 low scoring outputs and 7, 8 high scoring ones, respectively
+    # Two universities 10007783, 10007856 which have 0 low scoring outputs and 7, 8 high scoring ones, respectively
     data = pd.DataFrame({
         'Institution code (UKPRN)': [10007783, 10007856],
         'high_scoring_outputs': [7, 8],
