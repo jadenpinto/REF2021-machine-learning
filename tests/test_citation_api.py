@@ -3,6 +3,7 @@ import pandas as pd
 import importlib.util
 import sys
 from pathlib import Path
+import pytest
 
 # Path to project root
 project_root = Path(__file__).resolve().parent.parent
@@ -25,11 +26,41 @@ process_citation_metadata = module.process_citation_metadata
 # Set up dummy API key
 module.elsevier_api_key = "ABCDE1234"
 
+# Test set-up, create resources like dataframes and JSON hashmaps that will be used in multiple tests
 
-def test_extract_citation_metadata():
-    sample_citation_metadata_api_payload = {'abstract-citations-response': {'identifier-legend': {'identifier': [{'@_fa': 'true', 'scopus_id': '85021243138'}]}, 'citeInfoMatrix': {'citeInfoMatrixXML': {'citationMatrix': {'cc': [{'$': '0'}, {'$': '0'}, {'$': '0'}, {'$': '1'}, {'$': '5'}, {'$': '4'}, {'$': '2'}], 'rangeCount': '12'}}}, 'citeColumnTotalXML': {'citeCountHeader': None}}}
+@pytest.fixture
+def sample_doi_df():
+    """Provides a sample DataFrame containing a single DOI used for multiple tests"""
+    return pd.DataFrame({
+        'DOI': ['10.1145/3034786.3056106']
+    })
 
-    expected_extracted_citation_metrics = {'scopus_id': '85021243138', 'citation_counts_2014': 0, 'citation_counts_2015': 0, 'citation_counts_2016': 0, 'citation_counts_2017': 1, 'citation_counts_2018': 5, 'citation_counts_2019': 4, 'citation_counts_2020': 2, 'total_citations': 12}
+@pytest.fixture
+def sample_citation_metadata_api_payload():
+    """Provides a sample JSON payload response to the citations API for the sample DOI values (10.1145/3034786.3056106)"""
+    return {
+        'abstract-citations-response': {
+            'identifier-legend': {'identifier': [{'@_fa': 'true', 'scopus_id': '85021243138'}]},
+            'citeInfoMatrix': {
+                'citeInfoMatrixXML': {'citationMatrix': {
+                    'cc': [{'$': '0'}, {'$': '0'}, {'$': '0'}, {'$': '1'}, {'$': '5'}, {'$': '4'}, {'$': '2'}],
+                    'rangeCount': '12'}}},
+            'citeColumnTotalXML': {'citeCountHeader': None}}
+    }
+
+@pytest.fixture
+def sample_extracted_citation_metrics():
+    """Provides a sample parsed and extracted JSON containing the citation metrics from the API call for the 10.1145/3034786.3056106 DOI"""
+    return {
+        'scopus_id': '85021243138', 'citation_counts_2014': 0,
+        'citation_counts_2015': 0, 'citation_counts_2016': 0,
+        'citation_counts_2017': 1, 'citation_counts_2018': 5,
+        'citation_counts_2019': 4, 'citation_counts_2020': 2, 'total_citations': 12
+    }
+
+
+def test_extract_citation_metadata(sample_citation_metadata_api_payload, sample_extracted_citation_metrics):
+    expected_extracted_citation_metrics = sample_extracted_citation_metrics
 
     actual_extracted_citation_metrics = extract_citation_metadata(sample_citation_metadata_api_payload)
 
@@ -42,33 +73,7 @@ def test_extract_empty_citation_metrics():
 def test_extract_citation_metadata_with_none():
     assert extract_citation_metadata(None) == {}
 
-
-def test_process_citation_metadata():
-    # Sample sample containing a DOI
-    sample_doi_df = pd.DataFrame({
-        'DOI': ['10.1145/3034786.3056106']
-    })
-
-    # Sample response data for DOI
-    sample_citation_metadata_api_payload = {
-        'abstract-citations-response': {
-            'identifier-legend': {'identifier': [{'@_fa': 'true', 'scopus_id': '85021243138'}]},
-            'citeInfoMatrix': {
-                'citeInfoMatrixXML': {'citationMatrix': {
-                    'cc': [{'$': '0'}, {'$': '0'}, {'$': '0'}, {'$': '1'}, {'$': '5'}, {'$': '4'}, {'$': '2'}],
-                    'rangeCount': '12'}}},
-            'citeColumnTotalXML': {'citeCountHeader': None}}
-    }
-
-    # Sample parsed data for DOI
-    sample_extracted_citation_metrics = {
-        'scopus_id': '85021243138', 'citation_counts_2014': 0,
-        'citation_counts_2015': 0, 'citation_counts_2016': 0,
-        'citation_counts_2017': 1, 'citation_counts_2018': 5,
-        'citation_counts_2019': 4, 'citation_counts_2020': 2, 'total_citations': 12
-    }
-
-
+def test_process_citation_metadata(sample_doi_df, sample_citation_metadata_api_payload, sample_extracted_citation_metrics):
     # Expected final dataframe
     expected_df = pd.DataFrame([
         {
@@ -99,19 +104,8 @@ def test_process_citation_metadata():
     pd.testing.assert_frame_equal(result_df.reset_index(drop=True), expected_df.reset_index(drop=True))
 
 
-def test_get_citation_metadata():
+def test_get_citation_metadata(sample_citation_metadata_api_payload):
     sample_doi = "10.1145/3034786.3056106"
-
-    sample_citation_metadata_api_payload = {
-        'abstract-citations-response': {
-            'identifier-legend': {'identifier': [{'@_fa': 'true', 'scopus_id': '85021243138'}]},
-            'citeInfoMatrix': {
-                'citeInfoMatrixXML': {'citationMatrix': {
-                    'cc': [{'$': '0'}, {'$': '0'}, {'$': '0'}, {'$': '1'}, {'$': '5'}, {'$': '4'}, {'$': '2'}],
-                    'rangeCount': '12'}}},
-            'citeColumnTotalXML': {'citeCountHeader': None}
-        }
-    }
 
     expected_citation_base_url = f"https://api.elsevier.com/content/abstract/citations"
     expected_citation_params = {
