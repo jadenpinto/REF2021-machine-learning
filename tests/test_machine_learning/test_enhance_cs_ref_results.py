@@ -1,6 +1,5 @@
 import pytest
 import pandas as pd
-from pandas.testing import assert_frame_equal
 
 from machine_learning.cs_output_results import enhance_score_distribution, log_high_low_scoring_universities, get_high_scoring_universities, log_university_count, filter_ref_outputs_for_cs
 
@@ -59,7 +58,7 @@ def test_enhance_score_distribution(input_data_frames):
         'low_scoring_outputs': [3, 2]
     })
 
-    assert_frame_equal(
+    pd.testing.assert_frame_equal(
         actual_enhanced_score_distribution_df.reset_index(drop=True),
         expected_enhanced_score_distribution_df,
         check_dtype=False
@@ -100,7 +99,7 @@ def test_get_high_scoring_universities():
         'Institution code (UKPRN)': [10007856, 10007857]
     }).sort_values(by='Institution code (UKPRN)').reset_index(drop=True)
 
-    assert_frame_equal(actual_high_scoring_universities_df_sorted, expected_high_scoring_universities_df)
+    pd.testing.assert_frame_equal(actual_high_scoring_universities_df_sorted, expected_high_scoring_universities_df)
 
 def test_log_university_count(capfd):
     # Dataframe of university results, for two universities
@@ -131,4 +130,4 @@ def test_filter_ref_outputs_for_cs():
 
     actual_cs_output_results_df = filter_ref_outputs_for_cs(cs_results_df).reset_index(drop=True)
 
-    assert_frame_equal(actual_cs_output_results_df, expected_cs_output_results_df)
+    pd.testing.assert_frame_equal(actual_cs_output_results_df, expected_cs_output_results_df)
