@@ -167,7 +167,7 @@ def process_sjr_impact_factor():
     log_issn_lengths(sjr_df)                       # Possible lengths: 9. Example: 1542-4863
 
     # Write:
-    # write_processed_sjr(sjr_df)
+    write_processed_sjr(sjr_df)
 
 if __name__ == "__main__":
     main()
