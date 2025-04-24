@@ -18,8 +18,8 @@ def delete_rows_by_values(df, col, values):
 def log_null_values(df):
     print(df.isna().sum())
 
-# Column Types:
-# print(sjr_df.dtypes)
+def log_dataframe_column_types(df):
+    print(df.dtypes)
 
 def split_df_on_null_field(df, field):
     field_is_null = df[field].isna()
