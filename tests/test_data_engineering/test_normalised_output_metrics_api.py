@@ -78,11 +78,14 @@ def test_process_output_metrics(
     ])
 
     # Setup mocks
-    with patch.object(module, "get_output_metadata", return_value=sample_scival_output_metrics_api_payload) as mock_get_output_metadata, \
-            patch.object(module, "extract_output_metadata", return_value=sample_scival_output_metrics_parsed_dict) as mock_extract_output_metadata:
-
-        # For the given scopus ID, process it to obtained field normalised outputs metrics via scival publication API:
-        actual_field_normalised_outputs_df = module.process_output_metrics(sample_scopus_id_df)
+    with patch.object(
+            module, "get_output_metadata", return_value=sample_scival_output_metrics_api_payload
+    ) as mock_get_output_metadata:
+        with patch.object(
+                module, "extract_output_metadata", return_value=sample_scival_output_metrics_parsed_dict
+        ) as mock_extract_output_metadata:
+            # For the given scopus ID, process it to obtained field normalised outputs metrics via scival publication API:
+            actual_field_normalised_outputs_df = module.process_output_metrics(sample_scopus_id_df)
 
     # Assertions:
 
