@@ -1,3 +1,9 @@
+"""
+Archived Script:
+The SJR metrics were obtained using the Scopus serial title API, see journal_metrics/02_scopus_serial_title_API.py
+The SJR data set was used to fill in the missing values after the API calls, see journal_metrics/05_handle_missing_journal_metrics.py
+"""
+
 import os
 import pandas as pd
 
@@ -63,7 +69,6 @@ def join_outputs_metadata_with_sjr():
     # Failed joins: Issn = None
     print(joined_df.isna().sum()) # Issn = 1641. 1641 failed joins. [successful joins = 7296-1641 = 5655]
     # So, besides journal articles, a few entries of other types have an SJR impact [5655 - 5270 = 385]
-    # I could visualise this, to see, of all records that were successfully joined, plot pie chart of output type
 
     return joined_df
 
@@ -71,26 +76,3 @@ journal_metadata_with_sjr = join_journal_article_metadata_with_sjr()
 outputs_with_sjr = join_outputs_metadata_with_sjr()
 
 log_failed_joins(journal_metadata_with_sjr)
-
-"""
-Also now that I had split up records earlier
-Check how many duplicate article titles [dont search for journal titles since you can have multiple journals]
-Actually no need to dedup, since you're joining all articles with journals using issn, so each gets joined to only one journal
-"""
-
-"""
-Joined but no SJR:
-
-      Institution UKPRN code             Institution name Main panel  Multiple submission letter  Multiple submission name  Joint submission Output type                                                                                                                                    Title_x Place Publisher                                  Volume title Volume   Issue First page Article number ISBN       ISSN                     DOI Patent number     Month    Year                            URL  Number of additional authors  Non-English Interdisciplinary Forensic science Criminology  Propose double weighting  Is reserve output                            Research group Open access status Citations applicable  Citation count  Cross-referral requested Supplementary information Delayed by COVID19                                REF2ID  Incl sig material before 2014  Incl reseach process  Incl factual info about significance     Rank                                                      Title_y       Issn  SJR  Issn_length
-2147                10007772  Edinburgh Napier University          B                         NaN                       NaN               NaN           D  Employing a Machine Learning Approach to Detect Combined Internet of Things Attacks Against Two Objective Functions Using a Novel Dataset   NaN       NaN           Security and Communication Networks   2020     NaN          1        2804291  NaN  1939-0114    10.1155/2020/2804291           NaN  February  2020.0                            NaN                           2.0          NaN               NaN              NaN         NaN                       NaN                NaN                                       NaN          Compliant                  Yes             2.0                       NaN                       NaN                NaN  be658bb8-17cb-4b57-8eed-005c1f303820                              0                     0                                     0  29123.0           Security and Communication Networks (discontinued)  1939-0114  NaN         18.0
-2169                10007803     University of St Andrews          B                         NaN                       NaN               NaN           D                                                                                            End-to-end mobility for the internet using ILNP   NaN       NaN  Wireless Communications and Mobile Computing   2019     NaN          1        7464179  NaN  1530-8669    10.1155/2019/7464179           NaN     April  2019.0                            NaN                           1.0          NaN               NaN              NaN         NaN                       NaN                NaN                               B - Systems          Compliant                  Yes             1.0                       NaN                       NaN                NaN  c6174a65-03de-4d5c-811f-ba036617ad78                              0                     1                                     1  29162.0  Wireless Communications and Mobile Computing (discontinued)  1530-8669  NaN         18.0
-3775                10007786        University of Bristol          B                         NaN                       NaN               NaN           D                                                                                        Onboard evolution of understandable swarm behaviors   NaN       NaN                  Advanced Intelligent Systems      1       6        NaN        1900031  NaN  2640-4567  10.1002/aisy.201900031           NaN      July  2019.0                            NaN                           3.0          NaN               NaN              NaN         NaN                       NaN                NaN  A - Artificial Intelligence and Autonomy          Compliant                  Yes             NaN                       NaN                       NaN                NaN  46207927-14b4-4c0a-bf4b-dc1f736793b6                              0                     0                                     1  28958.0                                 Advanced Intelligent Systems  2640-4567  NaN          8.0
-5242                10007150       The University of Kent          B                         NaN                       NaN               NaN           D                                                       Trust Management for Public Key Infrastructures: Implementing the X.509 Trust Broker   NaN       NaN           Security and Communication Networks   2017  690714          1        6907146  NaN  1939-0114    10.1155/2017/6907146           NaN  February  2017.0  https://kar.kent.ac.uk/60311/                           6.0          NaN               NaN              NaN         NaN                       NaN                NaN                                       NaN          Compliant                  Yes             0.0                       NaN                       NaN                NaN  f7d0421c-8b0c-4f7b-bf68-b43dc00be344                              0                     0                                     1  29123.0           Security and Communication Networks (discontinued)  1939-0114  NaN         18.0
-
-SJR:
-Security and Communication Network -> 0.494 (as of 2022)
-Wireless Communications and Mobile Computing -> 0.445 (as of 2022)
-Advanced Intelligent Systems -> No Data
-"""
-
-# I believe this script is archived as the API was used instead.
