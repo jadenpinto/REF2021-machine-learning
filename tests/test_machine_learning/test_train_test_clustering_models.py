@@ -2,7 +2,7 @@ import pytest
 import pandas as pd
 from unittest.mock import patch
 
-from machine_learning.clustering_one import infer_cluster_labels, get_actual_output_score_percentages, get_predicted_output_score_percentages, log_testing_data_cluster_distribution, log_training_data_cluster_distribution
+from machine_learning.train_test_clustering_models import infer_cluster_labels, get_actual_output_score_percentages, get_predicted_output_score_percentages, log_testing_data_cluster_distribution, log_training_data_cluster_distribution
 
 @pytest.fixture
 def cluster_training_data():
@@ -26,7 +26,7 @@ def enhanced_results_df():
         'low_scoring_outputs': [0, 2, 0]
     })
 
-@patch('machine_learning.clustering_one.get_high_scoring_universities')
+@patch('machine_learning.train_test_clustering_models.get_high_scoring_universities')
 def test_infer_cluster_labels(mock_get_high_scoring_universities, cluster_training_data, enhanced_results_df):
     #  The high scoring universities are: 10007783 and 10000001, return them in the function returning high-scoring universities
     mock_get_high_scoring_universities.return_value = pd.DataFrame({
