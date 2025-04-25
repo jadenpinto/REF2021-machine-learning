@@ -343,8 +343,7 @@ class DeterministicAnnealing:
         return total
 
 """
-Prevents this warning:
+Adding epsilon prevents this warning:
 RuntimeWarning: invalid value encountered in divide
   divider = exp_term / np.sum(np.multiply(exp_term, eta_repmat), axis=1).reshape(
-  
 """
