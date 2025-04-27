@@ -49,31 +49,32 @@ def analyse_clusters(train, cluster_label_mapping):
     # 5. Analyse Interdisciplinary research
     analyse_interdisciplinary_research(high_scoring_outputs_df, low_scoring_outputs_df)
 
-    # 5. Analyse Forensic science outputs
+    # 6. Analyse Forensic science outputs
     analyse_forensic_science_outputs(high_scoring_outputs_df, low_scoring_outputs_df)
 
+    # 7. Analyse Criminology outputs
+    analyse_criminology_outputs(high_scoring_outputs_df, low_scoring_outputs_df)
+
+    # 8. Analyse Open access status
+    analyse_open_access_status_outputs(high_scoring_outputs_df, low_scoring_outputs_df)
+
+    # 9. Analyse Cross-referral requested
+    analyse_cross_referral_requested_outputs(high_scoring_outputs_df, low_scoring_outputs_df)
+
+    # 10. Incl factual info about significance
+    analyse_significance_factual_info_outputs(high_scoring_outputs_df, low_scoring_outputs_df)
 
     print()
 
 
 
 def analyse_top_citation_percentiles(high_scoring_outputs_df, low_scoring_outputs_df):
-    # Count occurrences of each unique percentile in top_citation_percentile for both dataframes:
-    high_scoring_top_percentile_counts = high_scoring_outputs_df['top_citation_percentile'].value_counts().sort_index()
-    low_scoring_top_percentile_counts = low_scoring_outputs_df['top_citation_percentile'].value_counts().sort_index()
-
-    # Log counts and percentage distribution of top citation percentiles
-    print("High Scoring Outputs - top_citation_percentile counts:")
-    print(high_scoring_top_percentile_counts)
-    print("\nLow Scoring Outputs - top_citation_percentile counts:")
-    print(low_scoring_top_percentile_counts)
-
-    print("\nHigh Scoring Outputs - top_citation_percentile distribution (%):")
-    print((high_scoring_top_percentile_counts / high_scoring_top_percentile_counts.sum() * 100))
-    print("\nLow Scoring Outputs - top_citation_percentile distribution (%):")
-    print((low_scoring_top_percentile_counts / low_scoring_top_percentile_counts.sum() * 100))
+    log_counts_and_distribution_for_high_low_scoring_outputs(
+        high_scoring_outputs_df, low_scoring_outputs_df, 'top_citation_percentile'
+    )
 
 def analyse_citation_counts(high_scoring_outputs_df, low_scoring_outputs_df):
+    # todo can make this a function
     print("\nHigh Scoring Outputs - Citation counts:")
     print(high_scoring_outputs_df['total_citations'].describe())
     print("\nLow Scoring Outputs - Citation counts:")
@@ -83,19 +84,9 @@ def analyse_citation_counts(high_scoring_outputs_df, low_scoring_outputs_df):
 def analyse_output_types(
     train, high_scoring_outputs_df, low_scoring_outputs_df, high_scoring_cluster_number, low_scoring_cluster_number
 ):
-    high_scoring_output_type_counts = high_scoring_outputs_df['Output type'].value_counts().sort_index()
-    low_scoring_output_type_counts = low_scoring_outputs_df['Output type'].value_counts().sort_index()
-
-    # Log counts and percentage distribution of output types
-    print("\nHigh Scoring Outputs - Output type counts:")
-    print(high_scoring_output_type_counts)
-    print("\nLow Scoring Outputs - Output type counts:")
-    print(low_scoring_output_type_counts)
-
-    print("\nHigh Scoring Outputs - Output type distribution (%):")
-    print((high_scoring_output_type_counts / high_scoring_output_type_counts.sum() * 100))
-    print("\nLow Scoring Outputs - Output type distribution (%):")
-    print((low_scoring_output_type_counts / low_scoring_output_type_counts.sum() * 100))
+    log_counts_and_distribution_for_high_low_scoring_outputs(
+        high_scoring_outputs_df, low_scoring_outputs_df, 'Output type'
+    )
 
     # For each output type, log what percentage os such outputs were high- and low-scoring:
     output_types = train['Output type'].unique()
@@ -117,7 +108,7 @@ def analyse_output_types(
         print(f"Low scoring: {curr_type_low_count} ({curr_output_type_low_percent}%)")
 
 
-def analyse_author_counts(high_scoring_outputs_df, low_scoring_outputs_df):
+def analyse_author_counts(high_scoring_outputs_df, low_scoring_outputs_df): # todo describe function
     print("\nHigh Scoring Outputs - Number of additional authors:")
     print(high_scoring_outputs_df['Number of additional authors'].describe())
     print("\nLow Scoring Outputs - Number of additional authors:")
@@ -128,8 +119,8 @@ def analyse_interdisciplinary_research(high_scoring_outputs_df, low_scoring_outp
     # The value of this field is Yes if the output is interdisciplinary, if not, the field is left blank
 
     # Replace Nulls with No
-    high_scoring_outputs_df.loc[:, 'Interdisciplinary'] = high_scoring_outputs_df['Interdisciplinary'].fillna('No')
-    low_scoring_outputs_df.loc[:, 'Interdisciplinary'] = low_scoring_outputs_df['Interdisciplinary'].fillna('No')
+    high_scoring_outputs_df = replace_feature_nulls_with_no(high_scoring_outputs_df, 'Interdisciplinary')
+    low_scoring_outputs_df = replace_feature_nulls_with_no(low_scoring_outputs_df, 'Interdisciplinary')
 
     log_counts_and_distribution_for_high_low_scoring_outputs(
         high_scoring_outputs_df, low_scoring_outputs_df, 'Interdisciplinary'
@@ -139,18 +130,61 @@ def analyse_forensic_science_outputs(high_scoring_outputs_df, low_scoring_output
     # The value of this field is Yes if the output embodies research in forensic science, if not, the field is left blank
 
     # Replace Nulls with No
-    high_scoring_outputs_df.loc[:, 'Forensic science'] = high_scoring_outputs_df['Forensic science'].fillna('No')
-    low_scoring_outputs_df.loc[:, 'Forensic science'] = low_scoring_outputs_df['Forensic science'].fillna('No')
+    high_scoring_outputs_df = replace_feature_nulls_with_no(high_scoring_outputs_df, 'Forensic science')
+    low_scoring_outputs_df = replace_feature_nulls_with_no(low_scoring_outputs_df, 'Forensic science')
 
     log_counts_and_distribution_for_high_low_scoring_outputs(
         high_scoring_outputs_df, low_scoring_outputs_df, 'Forensic science'
     )
 
+def analyse_criminology_outputs(high_scoring_outputs_df, low_scoring_outputs_df):
+    # The value of this field is Yes if the output embodies research in criminology, if not, the field is left blank
+
+    # Replace Nulls with No
+    high_scoring_outputs_df = replace_feature_nulls_with_no(high_scoring_outputs_df, 'Criminology')
+    low_scoring_outputs_df = replace_feature_nulls_with_no(low_scoring_outputs_df, 'Criminology')
+
+    log_counts_and_distribution_for_high_low_scoring_outputs(
+        high_scoring_outputs_df, low_scoring_outputs_df, 'Criminology'
+    )
+
+def analyse_open_access_status_outputs(high_scoring_outputs_df, low_scoring_outputs_df):
+    log_counts_and_distribution_for_high_low_scoring_outputs(
+        high_scoring_outputs_df, low_scoring_outputs_df, 'Open access status'
+    )
+
+def analyse_cross_referral_requested_outputs(high_scoring_outputs_df, low_scoring_outputs_df):
+    # If cross referral is requested, the value is the UOA to which the output was cross-referred to for advice
+    # Is cross referral was not request, the field is left blank
+
+    # Replace Nulls with No
+    high_scoring_outputs_df = replace_feature_nulls_with_no(high_scoring_outputs_df, 'Cross-referral requested')
+    low_scoring_outputs_df = replace_feature_nulls_with_no(low_scoring_outputs_df, 'Cross-referral requested')
+
+    # Cannot call the log_counts_and_distribution_for_high_low_scoring_outputs() because sort_index()
+    # doesn't work with numbers (UOA) and strings("No"
+    high_scoring_outputs_feature_value_counts = high_scoring_outputs_df['Cross-referral requested'].value_counts()
+    low_scoring_outputs_feature_value_counts = low_scoring_outputs_df['Cross-referral requested'].value_counts()
+
+    print(f"High Scoring Outputs - Cross-referral requested counts:")
+    print(high_scoring_outputs_feature_value_counts)
+    print(f"\nLow Scoring Outputs - Cross-referral requested counts:")
+    print(low_scoring_outputs_feature_value_counts)
+
+    print(f"\nHigh Scoring Outputs - Cross-referral requested distribution (%):")
+    print((high_scoring_outputs_feature_value_counts / high_scoring_outputs_feature_value_counts.sum() * 100))
+    print(f"\nLow Scoring Outputs - Cross-referral requested distribution (%):")
+    print((low_scoring_outputs_feature_value_counts / low_scoring_outputs_feature_value_counts.sum() * 100))
+
+def analyse_significance_factual_info_outputs(high_scoring_outputs_df, low_scoring_outputs_df):
+    log_counts_and_distribution_for_high_low_scoring_outputs(
+        high_scoring_outputs_df, low_scoring_outputs_df, 'Incl factual info about significance'
+    )
 
 
 def log_counts_and_distribution_for_high_low_scoring_outputs(
     high_scoring_outputs_df, low_scoring_outputs_df, feature
-): # todo call this method for the first few features
+):
     # Count occurrences of each of the feature's values in both dataframes:
     high_scoring_outputs_feature_value_counts = high_scoring_outputs_df[feature].value_counts().sort_index()
     low_scoring_outputs_feature_value_counts = low_scoring_outputs_df[feature].value_counts().sort_index()
@@ -166,6 +200,11 @@ def log_counts_and_distribution_for_high_low_scoring_outputs(
     print(f"\nLow Scoring Outputs - {feature} distribution (%):")
     print((low_scoring_outputs_feature_value_counts / low_scoring_outputs_feature_value_counts.sum() * 100))
 
+def replace_feature_nulls_with_no(df, feature):
+    # Create a copy of the dataframe to avoid the SettingWithCopyWarning which occurs when modifying a copy of the slice
+    # from a DataFrame.
+    df = df.copy()
 
-
-# todo - possibly Publisher, Year
+    # Replace the missing values of the feature with No
+    df[feature] = df[feature].fillna('No')
+    return df
