@@ -64,6 +64,21 @@ def analyse_clusters(train, cluster_label_mapping):
     # 10. Incl factual info about significance
     analyse_significance_factual_info_outputs(high_scoring_outputs_df, low_scoring_outputs_df)
 
+    # 11. Analyse SNIP
+    analyse_snip(high_scoring_outputs_df, low_scoring_outputs_df)
+
+    # 12. Analyse SJR
+    analyse_sjr(high_scoring_outputs_df, low_scoring_outputs_df)
+
+    # 13. Analyse Cite Score
+    analyse_cite_score(high_scoring_outputs_df, low_scoring_outputs_df)
+
+    # 14. Analyse Field Weighted Citation Impact
+    analyse_field_weighted_citation_impact(high_scoring_outputs_df, low_scoring_outputs_df)
+
+    # 15. Analyse Field Weighted Views Impact
+    analyse_field_weighted_views_impact(high_scoring_outputs_df, low_scoring_outputs_df)
+
     print()
 
 
@@ -74,11 +89,9 @@ def analyse_top_citation_percentiles(high_scoring_outputs_df, low_scoring_output
     )
 
 def analyse_citation_counts(high_scoring_outputs_df, low_scoring_outputs_df):
-    # todo can make this a function
-    print("\nHigh Scoring Outputs - Citation counts:")
-    print(high_scoring_outputs_df['total_citations'].describe())
-    print("\nLow Scoring Outputs - Citation counts:")
-    print(low_scoring_outputs_df['total_citations'].describe())
+    log_continuous_feature_for_high_low_scoring_outputs(
+        high_scoring_outputs_df, low_scoring_outputs_df, 'total_citations'
+    )
 
 
 def analyse_output_types(
@@ -108,11 +121,10 @@ def analyse_output_types(
         print(f"Low scoring: {curr_type_low_count} ({curr_output_type_low_percent}%)")
 
 
-def analyse_author_counts(high_scoring_outputs_df, low_scoring_outputs_df): # todo describe function
-    print("\nHigh Scoring Outputs - Number of additional authors:")
-    print(high_scoring_outputs_df['Number of additional authors'].describe())
-    print("\nLow Scoring Outputs - Number of additional authors:")
-    print(low_scoring_outputs_df['Number of additional authors'].describe())
+def analyse_author_counts(high_scoring_outputs_df, low_scoring_outputs_df):
+    log_continuous_feature_for_high_low_scoring_outputs(
+        high_scoring_outputs_df, low_scoring_outputs_df, 'Number of additional authors'
+    )
 
 
 def analyse_interdisciplinary_research(high_scoring_outputs_df, low_scoring_outputs_df):
@@ -181,6 +193,30 @@ def analyse_significance_factual_info_outputs(high_scoring_outputs_df, low_scori
         high_scoring_outputs_df, low_scoring_outputs_df, 'Incl factual info about significance'
     )
 
+def analyse_snip(high_scoring_outputs_df, low_scoring_outputs_df):
+    log_continuous_feature_for_high_low_scoring_outputs(
+        high_scoring_outputs_df, low_scoring_outputs_df, 'SNIP'
+    )
+
+def analyse_sjr(high_scoring_outputs_df, low_scoring_outputs_df):
+    log_continuous_feature_for_high_low_scoring_outputs(
+        high_scoring_outputs_df, low_scoring_outputs_df, 'SJR'
+    )
+
+def analyse_cite_score(high_scoring_outputs_df, low_scoring_outputs_df):
+    log_continuous_feature_for_high_low_scoring_outputs(
+        high_scoring_outputs_df, low_scoring_outputs_df, 'Cite_Score'
+    )
+
+def analyse_field_weighted_citation_impact(high_scoring_outputs_df, low_scoring_outputs_df):
+    log_continuous_feature_for_high_low_scoring_outputs(
+        high_scoring_outputs_df, low_scoring_outputs_df, 'field_weighted_citation_impact'
+    )
+
+def analyse_field_weighted_views_impact(high_scoring_outputs_df, low_scoring_outputs_df):
+    log_continuous_feature_for_high_low_scoring_outputs(
+        high_scoring_outputs_df, low_scoring_outputs_df, 'field_weighted_views_impact'
+    )
 
 def log_counts_and_distribution_for_high_low_scoring_outputs(
     high_scoring_outputs_df, low_scoring_outputs_df, feature
@@ -199,6 +235,14 @@ def log_counts_and_distribution_for_high_low_scoring_outputs(
     print((high_scoring_outputs_feature_value_counts / high_scoring_outputs_feature_value_counts.sum() * 100))
     print(f"\nLow Scoring Outputs - {feature} distribution (%):")
     print((low_scoring_outputs_feature_value_counts / low_scoring_outputs_feature_value_counts.sum() * 100))
+
+def log_continuous_feature_for_high_low_scoring_outputs(
+    high_scoring_outputs_df, low_scoring_outputs_df, feature
+):
+    print(f"\nHigh Scoring Outputs - {feature}:")
+    print(high_scoring_outputs_df[feature].describe())
+    print(f"\nLow Scoring Outputs - {feature}:")
+    print(low_scoring_outputs_df[feature].describe())
 
 def replace_feature_nulls_with_no(df, feature):
     # Create a copy of the dataframe to avoid the SettingWithCopyWarning which occurs when modifying a copy of the slice
