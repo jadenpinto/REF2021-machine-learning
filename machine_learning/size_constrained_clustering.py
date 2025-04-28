@@ -1,6 +1,7 @@
 """
 Forked from: https://github.com/AlbertPlaPlanas/spatialone-pipeline/blob/master/src/image_analysis/clustering/constrained_clustering.py
-Author: Albert P. (https://github.com/AlbertPlaPlanas)
+Original Author: Albert P. (https://github.com/AlbertPlaPlanas)
+Changes made by: Jaden Pinto
 """
 
 import collections
