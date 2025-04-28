@@ -100,8 +100,8 @@ def statistical_normality_tests(cs_outputs_enriched_metadata, features):
     # UserWarning: scipy.stats.shapiro: For N > 5000, computed p-value may not be accurate. (All of features have N>5000)
     print()
 
-    # 2) D’Agostino’s K^2 Test
-    print("D’Agostino’s K^2 Test:")
+    # 2) D'Agostino's K^2 Test
+    print("D'Agostino's K^2 Test:")
     for feature in features:
         data = cs_outputs_enriched_metadata[feature].dropna()
         stat, p = stats.normaltest(data)
