@@ -18,8 +18,8 @@ def main():
 
     check_skewness_total_citations(cs_outputs_enriched_metadata)
 
-    a = transform_and_normalise_citations(cs_outputs_enriched_metadata)
-    print(a['normalised_citations'].describe())
+    cs_outputs_enriched_metadata_with_transformed_citations = transform_and_normalise_citations(cs_outputs_enriched_metadata)
+    print(cs_outputs_enriched_metadata_with_transformed_citations['normalised_citations'].describe())
 
 def check_skewness_total_citations(cs_outputs_enriched_metadata):
     """
@@ -95,67 +95,20 @@ def log_transform_author_count(cs_outputs_enriched_metadata):
     df['log_transformed_authors'] = np.log1p(df['Number of additional authors'].fillna(0))
     return df
 
-def get_cs_outputs_df(input_set):
+def get_cs_outputs_df(features):
     cs_outputs_enriched_metadata = get_cs_outputs_enriched_metadata()
 
-    if "citations" in input_set:
+    if "normalised_citations" in features:
         cs_outputs_enriched_metadata = transform_and_normalise_citations(cs_outputs_enriched_metadata)
 
-    if "scival output metrics" in input_set:
+    if "top_citation_percentile" in features:
         cs_outputs_enriched_metadata = infer_missing_top_citation_percentile(cs_outputs_enriched_metadata)
 
-    if "author metrics" in input_set:
+    if "log_transformed_authors" in features:
         cs_outputs_enriched_metadata = log_transform_author_count(cs_outputs_enriched_metadata)
 
     return cs_outputs_enriched_metadata
 
-def get_cluster_features(input_set):
-    features = []
-
-    if "citations" in input_set:
-        features.append('normalised_citations')
-
-    if "journal metrics" in input_set:
-        journal_impact_metrics = ['SNIP', 'SJR', 'Cite_Score']
-        features.extend(journal_impact_metrics)
-
-    if "scival output metrics" in input_set:
-        output_metrics = ['field_weighted_citation_impact', 'top_citation_percentile', 'field_weighted_views_impact']
-        features.extend(output_metrics)
-
-    if "author metrics" in input_set:
-        author_metrics = ['log_transformed_authors']
-        features.extend(author_metrics)
-
-    return features
-
 
 if __name__ == "__main__":
     main()
-
-
-"""
-One hot encoding:
-
-Field Institution UKPRN code has 90 unique values
-Field Institution name has 90 unique values
-Field Output type has 13 unique values
-Field Title has 7005 unique values
-Field Place has 43 unique values
-Field Publisher has 97 unique values
-Field Year has 8 unique values
-Field Number of additional authors has 40 unique values
-Field Interdisciplinary has 1 unique values
-Field Forensic science has 1 unique values
-Field Criminology has 1 unique values
-Field Research group has 102 unique values
-Field Open access status has 8 unique values
-Field Cross-referral requested has 17 unique values
-Field Delayed by COVID19 has 1 unique values
-Field Incl sig material before 2014 has 2 unique values
-Field Incl reseach process has 2 unique values
-Field Incl factual info about significance has 2 unique values
-"""
-
-# todo first look at metrics, possibly move it into it's own file.
-# Next, look at feature engineering, consider different options and scaling too.
