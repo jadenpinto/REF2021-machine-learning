@@ -84,7 +84,7 @@ def cluster_journal_metrics(
         T=None
     )
 
-    model.fit(X_train_scaled) #, enforce_cluster_distribution=True)
+    model.fit(X_train_scaled)
 
     # Get cluster labels for training data
     train_labels = model.labels_
@@ -128,7 +128,6 @@ def infer_cluster_labels(cluster_training_df, cs_output_results_enhanced_df):
     # Determine which cluster has more datapoints
     data_points_in_cluster_0 = cluster_counts.get(0, 0)
     data_points_in_cluster_1 = cluster_counts.get(1, 0)
-    # print(data_points_in_cluster_0, data_points_in_cluster_1)
 
     if data_points_in_cluster_0 > data_points_in_cluster_1:
         return {
@@ -152,17 +151,16 @@ def get_actual_output_score_percentages(high_scoring_output_count, low_scoring_o
         high_scoring_output_percentage,
         low_scoring_output_percentage
     )
-    # Alternatively you can just return [4*+3*, 2*+1*+unclassified]
-    # Currently returns it super-precise, but using 4*,3*... from results gives rounded ratios
-    # For example, 10007800 (University of the West of Scotland), I return (69.84126984126983, 30.158730158730158)
-    # but just adding the results ratios [6.3, 63.5, 28.6, 1.6, 0] would return (69.8, 30.2)
+    # Alternatively, [4*+3*, 2*+1*+unclassified] can be returned
+    # Currently return values are precise
+    # For example, currently 10007800 (University of the West of Scotland), returns (69.84126984126983, 30.158730158730158)
+    # Adding the results ratios [6.3, 63.5, 28.6, 1.6, 0] would return (69.8, 30.2)
 
 def log_training_data_cluster_distribution(train, cluster_label_mapping, distribution):
     cluster_counts = train['cluster'].value_counts(normalize=True)
     print("Training cluster distribution:")
     print(f"Provided distribution = {distribution}")
     for i, percentage in enumerate(cluster_counts):
-        # print(f"Cluster {i}: {percentage:.1%}")
         print(f"Cluster {cluster_label_mapping[i]}: {percentage:.1%}")
 
 def log_testing_data_cluster_distribution(predicted, cluster_label_mapping):
@@ -171,7 +169,6 @@ def log_testing_data_cluster_distribution(predicted, cluster_label_mapping):
     print(f"[debug] pred_cluster_counts: {pred_cluster_counts}")
     print("\nPrediction cluster distribution:")
     for i, ratio in enumerate(pred_cluster_counts):
-        # print(f"Cluster {i}: {ratio:.1%}")
         print(f"Cluster {cluster_label_mapping[i]}: {ratio:.1%}")
 
 def get_predicted_output_score_percentages(predicted, cluster_label_mapping):
@@ -261,14 +258,14 @@ def Leave_one_out_cross_validation(cluster_features):
             testing_output_df,   # Data points (outputs) of current university
             features=cluster_features,   # Features using which clusters are created
             n_clusters=2,        # Clusters: High scoring outputs & Low scoring outputs
-            distribution=cluster_distribution,
-            scale = "Standard",
-            handle_missing_data = "Median"
+            distribution=cluster_distribution, # Target distribution of the training data's data points across 2 clusters
+            scale = "Standard", # Feature Scaling Technique: "Standard" or "Normal"
+            handle_missing_data = "Median" # Statistic for replacing missing values: "Mean", "Median", or "Mode"
         )
 
         total_evaluation_metrics = update_total_evaluation_metrics(total_evaluation_metrics, cluster_evaluation_metrics)
 
-        # Returns possibly a dictionary indicating which cluster maps to high_scoring or low_scoring
+        # Returns a dictionary mapping each cluster to the output type (high/low scoring) it represents
         cluster_label_mapping = infer_cluster_labels(train, cs_output_results_enhanced_df)
 
         # Verify cluster distribution for training data
