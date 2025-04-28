@@ -7,15 +7,27 @@ from machine_learning.cluster_performance_evaluation import get_cluster_evaluati
 
 from machine_learning.cs_output_results import enhance_score_distribution, get_cs_output_results, \
     get_high_scoring_universities
-from machine_learning.feature_engineering import get_cs_outputs_df, get_cluster_features
+from machine_learning.feature_engineering import get_cs_outputs_df
+from machine_learning.high_low_output_comparison import analyse_clusters
 
-# from machine_learning.size_constrained_clustering import DeterministicAnnealing
-from machine_learning.size_constrained_clustering_updated import DeterministicAnnealing
+from machine_learning.size_constrained_clustering import DeterministicAnnealing
+
 
 def main():
-    # or maybe just represent using a number like 1,2,3.. and create a table in report map input-set
-    input_set = {'citations', 'journal metrics', 'scival output metrics'}
-    Leave_one_out_cross_validation(input_set)
+    # Metrics:
+
+    # Output Metrics:
+    # normalised_citations, top_citation_percentile, field_weighted_citation_impact, field_weighted_views_impact
+
+    # Journal Metrics:
+    # SNIP, SJR, Cite_Score
+
+    # List of metrics used to train the clustering models:
+    features = [
+        'normalised_citations', 'top_citation_percentile'
+    ]
+
+    Leave_one_out_cross_validation(features)
 
 def cluster_journal_metrics(
         train_df, predict_df, features, n_clusters, distribution, random_state=42,
@@ -24,15 +36,29 @@ def cluster_journal_metrics(
     # Make a copy of the input dataframes
     train = train_df.copy()
 
-    # Select the numeric columns for clustering
-    # features = ['SNIP', 'SJR', 'Cite_Score', 'total_citations']
+    # Hashmap mapping each feature to the statistic used to replace missing values - mean, median, or mode.
+    # The statistics are obtained from the training data to avoid leaking information while testing models
+    imputation_values = {}
 
     if handle_missing_data == "Median":
-        # Store medians from training data for consistent imputation
-        medians = {}
+        # For each feature, store its median from training data - used to replace missing values
         for feature in features:
-            medians[feature] = train[feature].median()
-            train[feature] = train[feature].fillna(medians[feature])
+            imputation_values[feature] = train[feature].median()
+            train[feature] = train[feature].fillna(imputation_values[feature])
+
+    elif handle_missing_data == "Mean":
+        # For each feature, store its mean from training data - used to replace missing values
+        for feature in features:
+            imputation_values[feature] = train[feature].mean()
+            train[feature] = train[feature].fillna(imputation_values[feature])
+
+    elif handle_missing_data == "Mode":
+        # For each feature, store its mode from training data - used to replace missing values
+        for feature in features:
+            mode_value = train[feature].mode()
+            # In case of tie, mode returns multiple values - pick the first one
+            imputation_values[feature] = mode_value.iloc[0] if not mode_value.empty else None
+            train[feature] = train[feature].fillna(imputation_values[feature])
 
     # Extract features for clustering
     X_train = train[features].values
@@ -43,16 +69,16 @@ def cluster_journal_metrics(
     elif scale == "Normal":
         scaler = MinMaxScaler()
 
-    X_train_scaled = scaler.fit_transform(X_train) # X_train_scaled = X_train
+    X_train_scaled = scaler.fit_transform(X_train)
 
     # Set the number of clusters and desired distribution
     n_clusters = n_clusters
-    distribution = distribution # [0.3, 0.5, 0.2]  # 30%, 50%, 20%
+    distribution = distribution # For example, if desired distribution = 40%, 60%, then distribution = [0.4, 0.6]
 
     model = DeterministicAnnealing(
         n_clusters=n_clusters,
         distribution=distribution,
-        max_iters=1000,
+        max_iters=3000,
         distance_func=cdist,
         np_seed=random_state,
         T=None
@@ -70,16 +96,15 @@ def cluster_journal_metrics(
 
     predicted = predict_df.copy()
 
-    if handle_missing_data == "Median":
-        # Apply the same preprocessing as training data
-        for feature in features:
-            predicted[feature] = predicted[feature].fillna(medians[feature])
+    # Replace the predicted dataframe's missing values using statistics from the training data-set (mean, mode, median)
+    for feature in features:
+        predicted[feature] = predicted[feature].fillna(imputation_values[feature])
 
     # Extract features for prediction
     X_predict = predicted[features].values
 
-    # Standardise (scale) the testing data points using the same scaler used to fit the training data
-    X_predict_scaled = scaler.transform(X_predict) # X_predict_scaled = X_predict
+    # Scale the testing data points using the same scaler used to fit the training data
+    X_predict_scaled = scaler.transform(X_predict)
 
     # Predict cluster labels
     predict_labels = model.predict(X_predict_scaled)
@@ -168,15 +193,14 @@ def get_predicted_output_score_percentages(predicted, cluster_label_mapping):
     )
 
 # Leave-one-out cross-validation - creates a total of 90 models
-def Leave_one_out_cross_validation(input_set):
+def Leave_one_out_cross_validation(cluster_features):
     actual_high_scoring_output_percentages = []
     predicted_high_scoring_output_percentages = []
 
     actual_low_scoring_output_percentages = []
     predicted_low_scoring_output_percentages = []
 
-    cs_outputs_enriched_metadata = get_cs_outputs_df(input_set)
-    cluster_features = get_cluster_features(input_set)
+    cs_outputs_enriched_metadata = get_cs_outputs_df(cluster_features)
 
     cs_output_results_df = get_cs_output_results()
     cs_output_results_enhanced_df = enhance_score_distribution(cs_output_results_df, cs_outputs_enriched_metadata)
@@ -269,6 +293,11 @@ def Leave_one_out_cross_validation(input_set):
 
         total_folds += 1
 
+        if ukprn == 10007833:
+            analyse_clusters(train, cluster_label_mapping)
+
+    print(f"Features Used to Train Model: {cluster_features}\n")
+
     compute_clustering_accuracy(
         actual_high_scoring_output_percentages,
         predicted_high_scoring_output_percentages,
@@ -287,48 +316,6 @@ def Leave_one_out_cross_validation(input_set):
     )
 
 
-# In the cs_output_results_df dataframe, create a new field called total submissions
-# Maybe even in the process_cs_output_results() function
-# Calculate the value of this field, based on the cs_outputs_enriched_metadata df.
-
-# Now total number of 4* ->         (total 4* - 4* of aber uni) / total 4*
-# More efficient compared to ->     (uni1 4* + uni2 4* + ...... ) / total 4*
-
-# Possible just implement the k-means [1 off k-means with 90 models.]
-
-# clustered_df = cluster_journal_metrics(cs_outputs_enriched_metadata, 3, [0.3, 0.5, 0.2])
-
 
 if __name__ == "__main__":
     main()
-
-
-"""
-Files:
-1) Outputs
-2) Results - get results, and get counts. todo.
-3) Feature Engineering
-4) Clustering
-
-Also, you need only 2 universities which for you know are either high/low scoring
-say uni A and uni B
-When you training includes uni A -> use uni A to determine which cluster is low and which is high
-When you training excludes uni A (i.e. you're testing for uni A) -> use uni B to determine cluster labels.
-
-Preferable pick A and B such that they have many outputs [and an odd number]
-To determine:
-    assume A=all high scoring. Check counts data points of A in cluster 0 and 1.
-    if majority in cluster 0, then 0 is high scoring, else 1 is high scoring.
-"""
-
-
-"""
-curr_uni_high_scoring_outputs = testing_cs_output_results_df['high_scoring_outputs'].item()
-        curr_uni_low_scoring_outputs = testing_cs_output_results_df['low_scoring_outputs'].item()
-        # Expected high and low count ^
-        # Predictions for clusters should match this count as close as possible.
-        # if comparing ratios, might be redundant to use both high and low. For ex: if low=40, inferred tht high=60
-"""
-
-# I think make k validation a function, and then get the DFs and then make functions within it.
-# This way you dont have to pass in arguments like cs_outputs_enriched_metadata around, since they're in scope.
