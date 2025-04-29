@@ -1,6 +1,6 @@
 from datetime import datetime
 import pytest
-from unittest.mock import patch, Mock
+from unittest.mock import patch, MagicMock
 import time
 
 from utils.API import check_api_quota
@@ -11,10 +11,8 @@ def mock_response():
     """
     Set-up for tests: Returns a mocked response object, with status of 200 OK
     """
-    mock = Mock()
-    mock.status_code = 200
-    mock.headers = {}
-    return mock
+    mock_response = MagicMock()
+    return mock_response
 
 def test_check_api_quota_available(mock_response, capfd):
     """
