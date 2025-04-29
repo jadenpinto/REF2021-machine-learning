@@ -9,7 +9,7 @@ from utils.API import check_api_quota
 @pytest.fixture
 def mock_response():
     """
-    Set-up for tests: Returns a mocked response object, with status of 200 OK
+    Set-up for tests: Returns a mocked response object
     """
     mock_response = MagicMock()
     return mock_response
