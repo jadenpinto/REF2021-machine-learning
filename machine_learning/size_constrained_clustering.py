@@ -65,6 +65,7 @@ class DeterministicAnnealing:
         if np_seed is not None and isinstance(np_seed, np.random.Generator):
             self.rng = np_seed
 
+        # Change made by Jaden Pinto
         # Within-Cluster Sum of Squares:
         # Sum of the squared distances between each data point and the centroid of the cluster it belongs to
         self.inertia_ = None
@@ -133,6 +134,7 @@ class DeterministicAnnealing:
 
     def predict(self, X): # Fix shape issue
         distance_matrix = self.distance_func(X, self.cluster_centers_)
+        # Change made by Jaden Pinto
         # Create a new demands_prob array with the correct shape for prediction data
         # GenAI: Claude was used to generate the following two lines of code
         new_demands_prob = np.ones((X.shape[0], 1))
@@ -200,16 +202,17 @@ class DeterministicAnnealing:
 
         exp_term = np.exp(-self.beta * distance_matrix)
 
+        # Change made by Jaden Pinto:
         # Calculate the sum using epsilon (small value) to avoid division by zero
         sum_term = np.sum(np.multiply(exp_term, eta_repmat), axis=1).reshape((-1, 1))
         epsilon = 1e-8 # 10 ^ -8 = 0.00000001
-        sum_term = np.maximum(sum_term, epsilon)  # Ensures division by zero doesn't take place
+        sum_term = np.maximum(sum_term, epsilon)  # If the sum is <= 0, set it to epsilon
 
         divider = exp_term / sum_term
 
         # If denominator is 0, make it epsilon (small value)
         denominator = np.sum(divider * demands_prob, axis=0)
-        denominator = np.maximum(denominator, epsilon)  # Ensures division by zero doesn't take place
+        denominator = np.maximum(denominator, epsilon)  # If the denominator is <= 0, set it to epsilon
 
         eta = np.divide(np.asarray(self.lamb), denominator)
 
@@ -221,10 +224,11 @@ class DeterministicAnnealing:
         exp_term = np.exp(-self.beta * distance_matrix)
         factor = np.multiply(exp_term, eta_repmat)
 
+        # Change made by Jaden Pinto:
         # Define epsilon (small value) to avoid division by zero
         epsilon = 1e-8 # 10 ^ -8 = 0.00000001
         sum_factor = np.sum(factor, axis=1).reshape((-1, 1))
-        sum_factor = np.maximum(sum_factor, epsilon)  # Ensures division by zero doesn't take place
+        sum_factor = np.maximum(sum_factor, epsilon)  # If the sum factor is <= 0, set it to epsilon
 
         gibbs = factor / sum_factor
         return gibbs
@@ -234,9 +238,10 @@ class DeterministicAnnealing:
         divide_up = gibbs.T.dot(X * demands_prob)  # n_cluster, n_features
         p_y = np.sum(gibbs * demands_prob, axis=0)  # n_cluster,
 
+        # Change made by Jaden Pinto:
         # Define epsilon (small value) to avoid division by zero
         epsilon = 1e-8 # 10 ^ -8 = 0.00000001
-        p_y = np.maximum(p_y, epsilon)  # Ensures division by zero doesn't take place
+        p_y = np.maximum(p_y, epsilon)  # If p_y denominator is <= 0, set it to epsilon
 
         p_y_repmat = np.tile(p_y.reshape(-1, 1), (1, n_features))
         centers = np.divide(divide_up, p_y_repmat)
@@ -308,9 +313,15 @@ class DeterministicAnnealing:
         self.labels_ = labels
         return labels, resulting_allocation
 
+    # Function added by Jaden Pinto
     def compute_bcss(self, X):
-        # Calculate Between-Cluster Sum of Squares (BCSS).
-        # Higher values mean clusters are farther apart (more separated clusters)
+        """
+        Compute the Between-Cluster Sum of Squares (BCSS) metric used to evalaute cluster quality
+        Higher values mean clusters are farther apart (more separated clusters) i.e. of higher quality
+
+        :param X: Datapoints with cluster assignments
+        :return: Between-Cluster Sum of Squares values
+        """
         if self.cluster_centers_ is None:
             raise ValueError("Must fit the model first")
 
@@ -345,7 +356,5 @@ class DeterministicAnnealing:
         return total
 
 """
-Adding epsilon prevents this warning:
-RuntimeWarning: invalid value encountered in divide
-  divider = exp_term / np.sum(np.multiply(exp_term, eta_repmat), axis=1).reshape(
+Adding epsilon prevents this warning: RuntimeWarning: invalid value encountered in divide
 """
