@@ -134,6 +134,7 @@ class DeterministicAnnealing:
     def predict(self, X): # Fix shape issue
         distance_matrix = self.distance_func(X, self.cluster_centers_)
         # Create a new demands_prob array with the correct shape for prediction data
+        # GenAI: Claude was used to generate the following two lines of code
         new_demands_prob = np.ones((X.shape[0], 1))
         new_demands_prob = new_demands_prob / np.sum(new_demands_prob)
 
