@@ -10,6 +10,9 @@ from utils.constants import FIGURES_DIR
 
 
 def main():
+    """
+    Contains graphical and statistical tests to assess whether features follow a normal distribution.
+    """
     cs_outputs_enriched_metadata = get_cs_outputs_enriched_metadata()
     cs_outputs_enriched_metadata = infer_missing_top_citation_percentile(cs_outputs_enriched_metadata)
     # print(cs_outputs_enriched_metadata.head().to_string())
@@ -22,6 +25,12 @@ def main():
     statistical_normality_tests(cs_outputs_enriched_metadata, features)
 
 def plot_histograms(cs_outputs_enriched_metadata, features):
+    """
+    Plot histograms to visually check if shape resembles the bell-shape curve of a normal distribution
+
+    :param cs_outputs_enriched_metadata: DataFrame containing metadata of outputs submitted to the CS UoA
+    :param features: List of metrics whose normality is tested for
+    """
     for feature in features:
         plt.figure(figsize=(10, 5))
 
@@ -31,11 +40,13 @@ def plot_histograms(cs_outputs_enriched_metadata, features):
         # Plot histogram
         plt.hist(data, bins='auto', density=True,alpha=0.6, color='b', label='Data')
 
-        # Overlay normal distribution
+        # The histogram is overlaid with the feature’s normal probability density function
+        # If the histogram follows this curve, the data is said to fit a normal distribution
         mean = data.mean()
         std_dev = data.std()
         xmin, xmax = plt.xlim()
         x = np.linspace(xmin, xmax, 100)
+        # Compute the feature's probability density function using its mean and variance
         pdf = stats.norm.pdf(x, mean, std_dev)
         pdf_fmt = 'r-' # Red line to represent the normal fit
 
@@ -48,6 +59,7 @@ def plot_histograms(cs_outputs_enriched_metadata, features):
         plt.grid(True)
         plt.tight_layout()
 
+        # Export plot to figures/
         histogram_for_normality_check_path = os.path.join(
             os.path.dirname(__file__), "..", FIGURES_DIR, feature + '_histogram_normality_check'
         )
@@ -57,7 +69,13 @@ def plot_histograms(cs_outputs_enriched_metadata, features):
 
 
 def plot_qq(cs_outputs_enriched_metadata, features):
-    # Quantile-Quantile Plot
+    """
+    Plot Quantile-Quantile Plots to visually check if the data points follow the reference line (Henry’s line),
+    If so, the distribution is normal
+
+    :param cs_outputs_enriched_metadata: DataFrame containing metadata of outputs submitted to the CS UoA
+    :param features: List of metrics whose normality is tested for
+    """
 
     for feature in features:
         data = cs_outputs_enriched_metadata[feature].dropna()
@@ -69,6 +87,7 @@ def plot_qq(cs_outputs_enriched_metadata, features):
         plt.grid(True)
         plt.tight_layout()
 
+        # Export plot to figures/
         qq_plot_for_normality_check_path = os.path.join(
             os.path.dirname(__file__), "..", FIGURES_DIR, feature + '_qq_plot_normality_check'
         )
@@ -77,6 +96,13 @@ def plot_qq(cs_outputs_enriched_metadata, features):
         plt.show()
 
 def statistical_normality_tests(cs_outputs_enriched_metadata, features):
+    """
+    Perform Statistical Normality Tests to assess if the distribution of the data deviates from a normal distribution
+
+    :param cs_outputs_enriched_metadata: DataFrame containing metadata of outputs submitted to the CS UoA
+    :param features: List of metrics whose normality is tested for
+    """
+
     # Assumption: Sample is drawn from a Gaussian distribution (Data is normal) => Null hypothesis / H0
     # Threshold: Used to interpret the p value => Alpha, here: 5% = 0.05
     # Assumption holds true (sample likely drawn from a Gaussian distribution) if p value is greater than threshold

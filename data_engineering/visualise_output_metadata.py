@@ -142,6 +142,7 @@ def plot_university_pivot_data(pivot_data, filename):
     plt.tight_layout() # Tight layout, to fit all info on screen
 
     if filename:
+        # Export plot to figures/
         ref_cs_submission_types_distribution_by_uni_path = os.path.join(
             os.path.dirname(__file__), "..", FIGURES_DIR, filename
         )
