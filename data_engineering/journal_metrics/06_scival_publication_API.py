@@ -43,7 +43,7 @@ def main():
 
 def configure():
     """"
-    Configure the API Key - read the environment file, and load it as an environement variable
+    Configure the API Key - read the environment file, and load it as an environment variable
     """
     load_dotenv()
 

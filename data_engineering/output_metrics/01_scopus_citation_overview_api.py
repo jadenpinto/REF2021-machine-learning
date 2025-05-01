@@ -7,6 +7,9 @@ from dotenv import load_dotenv
 from utils.constants import DATASETS_DIR, PROCESSED_DIR, CS_OUTPUTS_METADATA, REFINED_DIR, CS_CITATION_METRICS
 
 def main():
+    """
+    ETL pipeline to obtain and persist the citation counts of outputs submitted to the CS UoA
+    """
     configure()
 
     global elsevier_api_key
@@ -18,11 +21,15 @@ def main():
 
 def configure():
     """
-    Configure the API Key - read the environment file, and load it as an environement variable
+    Configure the API Key - read the environment file, and load it as an environment variable
     """
     load_dotenv()
 
 def get_cs_outputs_metadata():
+    """
+    Obtain a DataFrame of containing the metadata of CS outputs - needed for creating the CS DOI dataframe
+    :return: DataFrame containing outputs metadata of submissions to the CS UoA
+    """
     processed_cs_outputs_metadata_path = os.path.join(os.path.dirname(__file__), "..", "..", DATASETS_DIR, PROCESSED_DIR,
                                            CS_OUTPUTS_METADATA)
 
@@ -30,18 +37,27 @@ def get_cs_outputs_metadata():
     return cs_outputs_metadata
 
 def get_cs_doi_df():
+    """
+    Obtain Dataframe containing the DOIs of outputs submitted to the CS UoA
+    :return: Dataframe containing the DOIs of outputs submitted to the CS UoA
+    """
     cs_outputs_df = get_cs_outputs_metadata()
     cs_doi_df = cs_outputs_df[["DOI"]].drop_duplicates().dropna()
     return cs_doi_df
 
 def get_citation_metadata(doi):
+    """
+    Using an outputs's DOI, make an API call to the Scopus Citation Overview API to obtain its citation metrics
+    :param doi: Unique identifier for an output
+    :return: JSON payload response that is returned on a successful API call to the Scopus API
+    """
     citation_metadata_base_url = f"https://api.elsevier.com/content/abstract/citations"
     citation_metadata_url_params = {
         "apiKey": elsevier_api_key,
         "doi": doi,
         "httpAccept": "application/json",
         "sort": "+sort-year",
-        "date": "2014-2020",
+        "date": "2014-2020", # Publication duration of outputs submitted to REF2021
         "field": "scopus_id,cc,rangeCount"
     }
 
@@ -61,6 +77,11 @@ def get_citation_metadata(doi):
         print(f"Error fetching data: {e}")
 
 def extract_citation_metadata(data):
+    """
+    Parse the Scopus API's JSON response, to obtained citation metrics
+    :param data: JSON payload response that is returned after a successful API call to the Scopus Citation API
+    :return: A hash-map representing the number of citations an output has received in the years 2014-2020
+    """
     try:
         if not data:
             return {}
@@ -90,11 +111,12 @@ def extract_citation_metadata(data):
                 int(citation_year_count.get("$", 0))
             )
 
-        # Extract total citation count
+        # Extract total citation count (Alternatively could sum the citation_counts array, but its available as rangeCount)
         total_citations = int(
             citation_metrics.get("rangeCount", 0)
         )
 
+        # Return a hash-map representing the number of citations an output has received in the years 2014-2020
         return {
             "scopus_id": scopus_id,
             "citation_counts_2014": citation_counts[0],
@@ -114,18 +136,35 @@ def extract_citation_metadata(data):
 
 
 def process_citation_metadata():
+    """
+    Obtain the DOIs of CS outputs, and return a DataFrame with each output and its citation counts using the Citation API
+    :return: DataFrame containing citation counts of outputs submitted to the CS UoA
+    """
     cs_doi_df = get_cs_doi_df()
 
     def process_doi(doi):
+        """
+        For a given output identified by its DOI, return a hash-map of its citation metrics with the DOI by calling an API
+        :param doi: Unique identifier for an output
+        :return: Hashmap containing citation metrics and the output's DOI
+        """
         citation_data = get_citation_metadata(doi)
         parsed_data = extract_citation_metadata(citation_data)
+        # In the extracted citation counts hash-map, include the output's DOI
         parsed_data["DOI"] = doi
         return parsed_data
 
+    # Instead of using an array, first filter for all DOIs, use apply to make the obtain a hash-map of parsed
+    # citation metrics by making API calls, and use another apply to transform these values as a series resulting in a
+    # Pandas dataframe
     cs_citation_metadata_df = cs_doi_df["DOI"].apply(process_doi).apply(pd.Series)
     return cs_citation_metadata_df
 
 def write_cs_citation_metadata_df(cs_citation_metadata_df):
+    """
+    Persist the dataframe containing citation counts of outputs as a parquet file
+    :param cs_citation_metadata_df: DataFrame containing citation counts of outputs submitted to the CS UoA
+    """
     cs_citation_metadata_df_path = os.path.join(
         os.path.dirname(__file__), "..", "..", DATASETS_DIR, REFINED_DIR, CS_CITATION_METRICS
     )

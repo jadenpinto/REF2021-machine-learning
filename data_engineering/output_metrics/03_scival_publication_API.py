@@ -45,6 +45,9 @@ def main():
     """
 
 def configure():
+    """"
+    Configure the API Key - read the environment file, and load it as an environment variable
+    """
     load_dotenv()
 
 def load_cs_citation_metadata_df():
@@ -76,6 +79,7 @@ def get_output_metadata(scopus_id): # Retrieve Field Weighted Publication metric
         response.raise_for_status()
 
         if response.status_code == 200:
+            # If the HTTP status code is 200 OK, it means the API call was successful, so retrieve the JSON response
             data = response.json()
             return data
         else:
