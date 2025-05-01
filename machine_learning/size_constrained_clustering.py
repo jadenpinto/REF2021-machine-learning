@@ -211,11 +211,11 @@ class DeterministicAnnealing:
 
         divider = exp_term / sum_term
 
-        # If denominator is 0, make it epsilon (small value)
-        denominator = np.sum(divider * demands_prob, axis=0)
-        denominator = np.maximum(denominator, epsilon)  # If the denominator is <= 0, set it to epsilon
+        # Again, use epsilon to compute the eta to prevent division by 0
+        denominator_term = np.sum(divider * demands_prob, axis=0)
+        denominator_term = np.maximum(denominator_term, epsilon)  # If the denominator_term is <= 0, set it to epsilon
 
-        eta = np.divide(np.asarray(self.lamb), denominator)
+        eta = np.divide(np.asarray(self.lamb), denominator_term)
 
         return eta
 
@@ -242,7 +242,7 @@ class DeterministicAnnealing:
         # Change made by Jaden Pinto:
         # Define epsilon (small value) to avoid division by zero
         epsilon = 1e-8 # 10 ^ -8 = 0.00000001
-        p_y = np.maximum(p_y, epsilon)  # If p_y denominator is <= 0, set it to epsilon
+        p_y = np.maximum(p_y, epsilon)  # If p_y is <= 0, set it to epsilon
 
         p_y_repmat = np.tile(p_y.reshape(-1, 1), (1, n_features))
         centers = np.divide(divide_up, p_y_repmat)
