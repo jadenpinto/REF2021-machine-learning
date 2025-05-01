@@ -3,16 +3,17 @@ from utils.constants import output_type
 
 def analyse_clusters(train, cluster_label_mapping):
     """
-
     The trained clusters are examined when Wrexham University's outputs (UKPRN=10007833) are used as the test set (fold),
     as it has only 9 outputs, the least among all universities.
 
     Compared to all other model configurations, this set-up has the largest number of data-points (outputs) in the training
     set.
 
-    :param train:
-    :param cluster_label_mapping:
-    :return:
+    Feature Analysis to identify the characteristics that distinguish high-quality research outputs from low-quality ones.
+
+    :param train: Datapoints (outputs) used to train the clustering model, with cluster assignments
+    :param cluster_label_mapping: Hash-map mapping each cluster to its label i.e. does it represent high- or low-scoring
+    outputs
     """
     print(train.head().to_string())
     print(cluster_label_mapping)
@@ -221,6 +222,12 @@ def analyse_field_weighted_views_impact(high_scoring_outputs_df, low_scoring_out
 def log_counts_and_distribution_for_high_low_scoring_outputs(
     high_scoring_outputs_df, low_scoring_outputs_df, feature
 ):
+    """
+    Log the distribution of the values of a categorical feature in both the outputs that are high- and low-scoring
+    :param high_scoring_outputs_df: DataFrame of outputs that were scored high-quality
+    :param low_scoring_outputs_df: DataFrame of outputs that were scored high-quality
+    :param feature: Categorical Feature in DataFrame
+    """
     # Count occurrences of each of the feature's values in both dataframes:
     high_scoring_outputs_feature_value_counts = high_scoring_outputs_df[feature].value_counts().sort_index()
     low_scoring_outputs_feature_value_counts = low_scoring_outputs_df[feature].value_counts().sort_index()
@@ -239,12 +246,24 @@ def log_counts_and_distribution_for_high_low_scoring_outputs(
 def log_continuous_feature_for_high_low_scoring_outputs(
     high_scoring_outputs_df, low_scoring_outputs_df, feature
 ):
+    """
+    Log the distribution of a continuous feature in both the outputs that are high- and low-scoring
+    :param high_scoring_outputs_df: DataFrame of outputs that were scored high-quality
+    :param low_scoring_outputs_df: DataFrame of outputs that were low high-quality
+    :param feature: Continuous Feature in DataFrame
+    """
     print(f"\nHigh Scoring Outputs - {feature}:")
     print(high_scoring_outputs_df[feature].describe())
     print(f"\nLow Scoring Outputs - {feature}:")
     print(low_scoring_outputs_df[feature].describe())
 
 def replace_feature_nulls_with_no(df, feature):
+    """
+    Replace all the null values in a feature with "No"
+    :param df: Dataframe with a field containing null values
+    :param feature: Feature whose null values should be replaced with a No
+    :return: Updated DataFrame with null values in feature, replaced with 'No'
+    """
     # Create a copy of the dataframe to avoid the SettingWithCopyWarning which occurs when modifying a copy of the slice
     # from a DataFrame.
     df = df.copy()
