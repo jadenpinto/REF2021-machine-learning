@@ -21,6 +21,7 @@ from utils.constants import DATASETS_DIR, PROCESSED_DIR, CS_JOURNALS_ISSN, REFIN
 
 
 def main():
+    # Securely retrieve API key:
     configure()
 
     global elsevier_api_key

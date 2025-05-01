@@ -10,6 +10,7 @@ def main():
     """
     ETL pipeline to obtain and persist the citation counts of outputs submitted to the CS UoA
     """
+    # Securely retrieve API key:
     configure()
 
     global elsevier_api_key
@@ -78,7 +79,7 @@ def get_citation_metadata(doi):
 
 def extract_citation_metadata(data):
     """
-    Parse the Scopus API's JSON response, to obtained citation metrics
+    Parse the Scopus API call's JSON response, to obtain citation metrics
     :param data: JSON payload response that is returned after a successful API call to the Scopus Citation API
     :return: A hash-map representing the number of citations an output has received in the years 2014-2020
     """
