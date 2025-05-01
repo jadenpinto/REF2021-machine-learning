@@ -42,6 +42,9 @@ def main():
     """
 
 def configure():
+    """"
+    Configure the API Key - read the environment file, and load it as an environement variable
+    """
     load_dotenv()
 
 
@@ -74,6 +77,7 @@ def get_journal_citation_metadata(scopus_publication_id): # FieldWeightedCitatio
         response.raise_for_status()
 
         if response.status_code == 200:
+            # If the HTTP status code is 200 OK, it means the API call was successful, so retrieve the JSON response
             data = response.json()
             return data
         else:
@@ -154,6 +158,7 @@ def get_journal_views_metadata(scopus_publication_id): # FieldWeightedViewsImpac
         response.raise_for_status()
 
         if response.status_code == 200:
+            # If the HTTP status code is 200 OK, it means the API call was successful, so retrieve the JSON response
             data = response.json()
             return data
         else:
