@@ -154,5 +154,8 @@ def statistical_normality_tests(cs_outputs_enriched_metadata, features):
             else:
                 print(f'Significance Level of {sl:.2f}: Critical Value = {cv:.2f}, data is not normal')  # Reject H0
 
+    # According to all three statistical tests, none of the features are normally distributed
+    # However, these tests are biased to reject normality when same size if large (7296 in this case)
+
 if __name__ == "__main__":
     main()
