@@ -33,11 +33,17 @@ def process_snip_df(raw_snip_df):
         raw_snip_df["Year"] == 2021
     ]
 
+    # The Raw SNIP file has multiple columns, filter for the ISSNs and the SNIP
     processed_snip_df = processed_snip_df.filter(['Print ISSN', 'Electronic ISSN', 'SNIP'])
 
+    # Split the SNIP dataframe into two dataframes:
+    # 1. Contains the print ISSN with the SNIP value. Rename print ISSN column as ISSN.
     print_issn = processed_snip_df[['SNIP', 'Print ISSN']].rename(columns={'Print ISSN': 'ISSN'})
+    # 2. Contains the electronic ISSN with the SNIP value. Rename electronic ISSN column as ISSN
     electronic_issn = processed_snip_df[['SNIP', 'Electronic ISSN']].rename(columns={'Electronic ISSN': 'ISSN'})
 
+    # Combine the two dataframes - this normalises it since now every row only has a single ISSN-SNIP pair
+    # As opposed to having 2 ISSNs (print and electronic) with the SNIP value
     processed_snip_df = pd.concat([print_issn, electronic_issn], ignore_index=True)
     processed_snip_df = processed_snip_df.dropna(subset=['ISSN'])
 
