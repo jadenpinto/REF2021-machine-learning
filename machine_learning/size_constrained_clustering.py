@@ -126,6 +126,7 @@ class DeterministicAnnealing:
         if enforce_cluster_distribution:
             self.enforce_cluster_distribution(X)
 
+        # Changes made by Jaden Pinto
         # Added as a metric to evaluate cluster performance
         # Compute Within-Cluster Sum of Squares AKA Inertia
         cluster_centers = self.cluster_centers_[self.labels_]
