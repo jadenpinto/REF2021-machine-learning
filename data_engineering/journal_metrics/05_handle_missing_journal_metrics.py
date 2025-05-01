@@ -96,13 +96,16 @@ def handle_null_sjr(journal_metrics_df):
     :param journal_metrics_df: Journal metrics dataframe containing missing SJR values
     :return: Journal metrics dataframe with missing SJR handled
     """
+    # Split into two dataframes, one with SJRs and another for journals missing SJRs
     null_sjr_journal_metrics_df, not_null_sjr_journal_metrics_df = split_df_on_null_field(journal_metrics_df, 'SJR')
 
     # Drop SJR from the null_sjr_df: [here SJR=null for all records, we try to obtain this by joining]
     null_sjr_journal_metrics_df = null_sjr_journal_metrics_df.drop(columns=['SJR'])
 
+    # Load the processed SJR dataframe
     sjr_df = load_sjr_df()
 
+    # Perform a merge using the null SJRs with the dataset containing the SJRs to override the null SJRs if ISSNs match
     null_sjr_with_sjr_df_joined = pd.merge(
         null_sjr_journal_metrics_df, sjr_df, left_on='ISSN', right_on='Issn', how='left'
     )
@@ -112,6 +115,7 @@ def handle_null_sjr(journal_metrics_df):
     # Ensure consistent column order
     null_sjr_with_sjr_df_joined = null_sjr_with_sjr_df_joined[['ISSN', 'Scopus_ID', 'SNIP', 'SJR', 'Cite_Score']]
 
+    # Combine the journals who original has SJRs along with the now processed journals with missing SJRs
     journal_metrics_handled_null_sjr_df = pd.concat([null_sjr_with_sjr_df_joined, not_null_sjr_journal_metrics_df])
 
     return journal_metrics_handled_null_sjr_df
@@ -122,13 +126,16 @@ def handle_null_snip(journal_metrics_df):
     :param journal_metrics_df: Journal metrics dataframe containing missing SNIP values
     :return: Journal metrics dataframe with missing SNIP handled
     """
+    # Split into two dataframes, one with SNIPs and another for journals missing SNIPs
     null_snip_journal_metrics_df, not_null_snip_journal_metrics_df = split_df_on_null_field(journal_metrics_df, 'SNIP')
 
     # Drop SNIP column from the null SNIP DF. SNIP values will be retrieved by performing join with SNIP DF
     null_snip_journal_metrics_df = null_snip_journal_metrics_df.drop(columns=['SNIP'])
 
-    snip_df = load_processed_snip_df() # possible rename ISSN -> Issn or ISSN_SNIP_DF
+    # Load the processed dataframe containing SNIP values
+    snip_df = load_processed_snip_df()
 
+    # Perform a merge using the null SNIPs with the dataset containing the SNIPs to override the null SNIPs if ISSNs match
     null_snip_with_snip_df_joined = pd.merge(
         null_snip_journal_metrics_df, snip_df, left_on='ISSN', right_on='ISSN', how='left'
     )
@@ -136,6 +143,7 @@ def handle_null_snip(journal_metrics_df):
     # Ensure consistent column order
     null_snip_with_snip_df_joined = null_snip_with_snip_df_joined[['ISSN', 'Scopus_ID', 'SNIP', 'SJR', 'Cite_Score']]
 
+    # Combine the journals who original has SNIPs along with the now processed journals with missing SNIPs
     journal_metrics_handled_null_snip_df = pd.concat([null_snip_with_snip_df_joined, not_null_snip_journal_metrics_df])
 
     return journal_metrics_handled_null_snip_df
