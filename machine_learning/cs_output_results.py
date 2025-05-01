@@ -7,6 +7,10 @@ from utils.constants import DATASETS_DIR, RAW_DIR, CS_RESULTS, MACHINE_LEARNING_
 
 
 def main():
+    """
+    Update the REF CS Output Quality Results by adding columns for  the number of high- and low-scoring outputs
+    per university.
+    """
     cs_output_results_df = get_cs_output_results()
 
     # The total number of universities who have submitted CS outputs to REF2021: 90
@@ -21,6 +25,10 @@ def main():
     log_high_low_scoring_universities(enhanced_results_df)
 
 def get_ref_results():
+    """
+    Load the REF CS Results file into a DataFrame
+    :return: DataFrame of REF CS Results for all universities
+    """
     results_dataset_path = os.path.join(os.path.dirname(__file__), "..", DATASETS_DIR, RAW_DIR, CS_RESULTS)
 
     try:
@@ -34,12 +42,21 @@ def get_ref_results():
         print("An error occurred while reading the file:", str(e))
 
 def get_cs_output_results():
+    """
+    Load the REF CS Results file into a DataFrame and obtain the REF CS Output Quality results DataFrame
+    :return: DataFrame of REF CS Output Quality Results for all universities.
+    """
     cs_results_df = get_ref_results()
 
-    cs_output_results_df = filter_ref_outputs_for_cs(cs_results_df)
+    cs_output_results_df = filter_ref_results_for_output_quality(cs_results_df)
     return cs_output_results_df
 
-def filter_ref_outputs_for_cs(cs_results_df):
+def filter_ref_results_for_output_quality(cs_results_df):
+    """
+    The CS REF results DataFrame includes results across 3 profiles - filter for the research output quality
+    :param cs_results_df: The CS REF results DataFrame
+    :return: DataFrame of REF CS Output Quality Results for all universities.
+    """
     is_outputs_profile = cs_results_df['Profile'] == 'Outputs'
     cs_output_results_df = cs_results_df[
         is_outputs_profile
@@ -48,11 +65,19 @@ def filter_ref_outputs_for_cs(cs_results_df):
     return cs_output_results_df
 
 def log_university_count(cs_output_results_df): # Institution code (UKPRN)
+    """
+    Log the total number of universities (using the REF CS results dataset)
+    :param cs_output_results_df: REF CS Output Quality Results including the number of high- and low-scoring outputs
+    """
     university_count = cs_output_results_df['Institution code (UKPRN)'].nunique()
     print(f"The total number of universities who have submitted CS outputs to REF2021: {university_count}")
     assert university_count == cs_output_results_df.shape[0]
 
 def get_cs_outputs_enriched_metadata():
+    """
+    Load the file containing the enriched metadata of CS outputs including journal and output metrics into a DataFrame
+    :return: DataFrame containing the enriched metadata of CS outputs including journal and output metrics
+    """
     cs_outputs_enriched_metadata_path = os.path.join(
         os.path.dirname(__file__), "..", DATASETS_DIR, MACHINE_LEARNING_DIR, CS_OUTPUTS_COMPLETE_METADATA
     )
@@ -68,6 +93,12 @@ def get_cs_outputs_enriched_metadata():
 
 
 def enhance_score_distribution(cs_output_results_df, cs_outputs_enriched_metadata):
+    """
+    Enhance the CS results by adding columns that indicate the number of high- and low-scoring outputs per university.
+    :param cs_output_results_df: REF CS Output Quality Results
+    :param cs_outputs_enriched_metadata: Metadata of CS outputs including journal and output metrics
+    :return: REF CS Output Quality Results including the number of high- and low-scoring outputs
+    """
     # Count total outputs per university
     total_outputs = cs_outputs_enriched_metadata.groupby('Institution UKPRN code').size().reset_index(
         name='total_university_outputs'
@@ -97,15 +128,24 @@ def enhance_score_distribution(cs_output_results_df, cs_outputs_enriched_metadat
     return enhanced_results_df
 
 def get_high_scoring_universities(enhanced_results_df):
+    """
+    Filter the enhanced results dataframe to obtain universities were all outputs are high scoring
+    :param enhanced_results_df: REF CS Output Quality Results including the number of high- and low-scoring outputs
+    :return: REF CS Output Quality Results of the high scoring university
+    """
     high_scoring_universities_df = enhanced_results_df[
-        (enhanced_results_df["high_scoring_outputs"] > 0) &
-        (enhanced_results_df["low_scoring_outputs"] == 0)
+        (enhanced_results_df["high_scoring_outputs"] > 0) & # At least one high-scoring output
+        (enhanced_results_df["low_scoring_outputs"] == 0)   # No low-scoring outputs
         ].sort_values(by="high_scoring_outputs", ascending=True)
 
     return high_scoring_universities_df[['Institution code (UKPRN)']]
 
 
 def log_high_low_scoring_universities(enhanced_results_df):
+    """
+    Low the number of universities where all CS outputs were scored low, and where all CS outputs were scored high
+    :param enhanced_results_df: REF CS Output Quality Results including the number of high- and low-scoring outputs
+    """
     low_scoring_universities_df = enhanced_results_df[
         (enhanced_results_df["low_scoring_outputs"] > 0) &
         (enhanced_results_df["high_scoring_outputs"] == 0)
@@ -120,10 +160,13 @@ def log_high_low_scoring_universities(enhanced_results_df):
 
 
 def plot_ref_scores_university_distribution(enhanced_results_df):
-    # Sort data by the number of 4-star outputs for readability
+    """
+    Plot the distribution of the REF scores across each university as a stacked bar chart
+    :param enhanced_results_df: REF CS Output Quality Results including the number of high- and low-scoring outputs
+    """
+    # Sort data by the number of 4-star outputs
     df_sorted = enhanced_results_df.sort_values(by='4star_outputs', ascending=False)
 
-    # Set the index to institution name
     df_plot = df_sorted.set_index('Institution name')[
         ['4star_outputs', '3star_outputs', '2star_outputs', '1star_outputs', 'unclassified_outputs']
     ]
@@ -145,7 +188,12 @@ def plot_ref_scores_university_distribution(enhanced_results_df):
     plt.show()
 
 def plot_ref_scores_overall_distribution(enhanced_results_df):
-    # Sum up all outputs by score across all institutions for the CS UoA
+    """
+    Plot the distribution of REF scores across all universities as a pie chart
+    :param enhanced_results_df: REF CS Output Quality Results including the number of high- and low-scoring outputs
+    """
+
+    # Calculate the number of outputs whose quality was scored 4*, 3*, 2*, 1* and Unclassified
     total_score_distribution = enhanced_results_df[
         ['4star_outputs', '3star_outputs', '2star_outputs', '1star_outputs', 'unclassified_outputs']
     ].sum()

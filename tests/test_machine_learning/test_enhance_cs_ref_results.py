@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 
-from machine_learning.cs_output_results import enhance_score_distribution, log_high_low_scoring_universities, get_high_scoring_universities, log_university_count, filter_ref_outputs_for_cs
+from machine_learning.cs_output_results import enhance_score_distribution, log_high_low_scoring_universities, get_high_scoring_universities, log_university_count, filter_ref_results_for_output_quality
 
 @pytest.fixture
 def input_data_frames():
@@ -115,7 +115,7 @@ def test_log_university_count(capfd):
     assert "The total number of universities who have submitted CS outputs to REF2021: 2" in out
 
 
-def test_filter_ref_outputs_for_cs():
+def test_filter_ref_results_for_output_quality():
     # Results from 4 universities two of which are for the outputs profile (10007856, 10007857)
     cs_results_df = pd.DataFrame({
         'Institution code (UKPRN)': [10007856, 10000001, 10007857, 10000002],
@@ -128,6 +128,6 @@ def test_filter_ref_outputs_for_cs():
         'Profile': ['Outputs', 'Outputs']
     }).reset_index(drop=True)
 
-    actual_cs_output_results_df = filter_ref_outputs_for_cs(cs_results_df).reset_index(drop=True)
+    actual_cs_output_results_df = filter_ref_results_for_output_quality(cs_results_df).reset_index(drop=True)
 
     pd.testing.assert_frame_equal(actual_cs_output_results_df, expected_cs_output_results_df)
