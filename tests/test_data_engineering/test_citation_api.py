@@ -30,14 +30,18 @@ module.elsevier_api_key = "ABCDE1234"
 
 @pytest.fixture
 def sample_doi_df():
-    """Provides a sample DataFrame containing a single DOI used for multiple tests"""
+    """
+    Provides a sample DataFrame containing a single DOI used for multiple tests
+    """
     return pd.DataFrame({
         'DOI': ['10.1145/3034786.3056106']
     })
 
 @pytest.fixture
 def sample_citation_metadata_api_payload():
-    """Provides a sample JSON payload response to the citations API for the sample DOI values (10.1145/3034786.3056106)"""
+    """
+    Provides a sample JSON payload response to the citations API for the sample DOI values (10.1145/3034786.3056106)
+    """
     return {
         'abstract-citations-response': {
             'identifier-legend': {'identifier': [{'@_fa': 'true', 'scopus_id': '85021243138'}]},
@@ -50,7 +54,9 @@ def sample_citation_metadata_api_payload():
 
 @pytest.fixture
 def sample_extracted_citation_metrics():
-    """Provides a sample parsed and extracted JSON containing the citation metrics from the API call for the 10.1145/3034786.3056106 DOI"""
+    """
+    Provides a sample parsed and extracted JSON containing the citation metrics from the API call for the 10.1145/3034786.3056106 DOI
+    """
     return {
         'scopus_id': '85021243138', 'citation_counts_2014': 0,
         'citation_counts_2015': 0, 'citation_counts_2016': 0,
