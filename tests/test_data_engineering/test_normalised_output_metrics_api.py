@@ -29,7 +29,9 @@ module.elsevier_api_key = "ABCDE1234"
 # Test set-up, create resources like dataframes and JSON hashmaps that will be used in multiple tests
 @pytest.fixture
 def sample_scopus_id_df():
-    """Provides a sample DataFrame containing a single scopus ID used for multiple tests"""
+    """
+    Provides a sample DataFrame containing a single scopus ID used for multiple tests
+    """
     return pd.DataFrame({
         'scopus_id': ['85021243138']
     })
