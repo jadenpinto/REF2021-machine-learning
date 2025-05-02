@@ -46,7 +46,7 @@ pytest tests/
 
 04_process_scimago_journal_rank.py: ETL pipeline to process the SCImago Journal Rank file to obtain a DataFrame of normalised SJR values that can be used to fill-in SJRs of journals that were missing after unsuccessful API calls
 
-05_handle_missing_journal_metrics.py: ETL pipeline to fill-in the journal metrics that were missing after unsuccessful Serial title API calls using the SNIP and SJR dataframes obtained by process files in the previous two scripts.
+05_handle_missing_journal_metrics.py: ETL pipeline to fill-in the journal metrics that were missing after unsuccessful Serial title API calls using the SNIP and SJR dataframes obtained by processing SNIP and SJR files in the previous two scripts.
 
 06_scival_publication_API.py: Archived script. Originally (and incorrectly) used to obtain field-normalised metrics for journals rather than individual outputs, leading to mostly unsuccessful API calls.
 
@@ -60,7 +60,7 @@ pytest tests/
 
 ### [Machine Learning](machine_learning)
 
-create_cs_outputs_enriched_metadata.py: ETL to create dataframe of CS outputs with complete metadata including journal journal metrics, citation counts, and field-normalised output performance metrics.
+create_cs_outputs_enriched_metadata.py: ETL pipeline to create dataframe of CS outputs with complete metadata including journal metrics, citation counts, and field-normalised output performance metrics.
 
 check_for_normality.py: Contains graphical and statistical tests to assess whether features follow a normal distribution.
 
