@@ -60,8 +60,18 @@ pytest tests/
 
 ### [Machine Learning](machine_learning)
 
+create_cs_outputs_enriched_metadata.py: ETL to create dataframe of CS outputs with complete metadata including journal journal metrics, citation counts, and field-normalised output performance metrics.
 
+check_for_normality.py: Contains graphical and statistical tests to assess whether features follow a normal distribution.
 
-## Data
+cs_output_results.py: Enhances the REF CS Output Quality Results by adding columns that indicate the number of high- and low-scoring outputs per university.
 
-Hello123
+feature_engineering.py: Transforms features prior to use in the clustering model, including skewness correction, temporal standardisation, and inferring missing values.
+
+size_constrained_clustering.py: Imported script implementing the deterministic annealing size-constrained clustering algorithm, with modifications applied.
+
+train_test_clustering_models.py: Train and evaluate the clustering models using University-Based Leave-One-Out Cross-Validation
+
+cluster_performance_evaluation.py: Compute and log the clustering model performance metrics - internal indices to assess cluster quality, and regression and statistical divergence metrics to asses cluster accuracy.
+
+high_low_output_comparison.py: Feature analysis to identify the characteristics that distinguish high-quality research outputs from low-quality ones.
