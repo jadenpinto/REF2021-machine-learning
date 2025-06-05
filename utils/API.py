@@ -27,6 +27,7 @@ def check_api_quota(api_key, api_endpoint):
     # HTTP 200: OK
     elif response.status_code == 200:
         print("API call successful. Quota is available.")
+        print(response.headers.get("X-RateLimit-Remaining"))
 
     else:
         print("Invalid API call. Quota is available.")
