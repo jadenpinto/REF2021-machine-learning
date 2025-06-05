@@ -14,7 +14,7 @@ Software developed as part of the major project to apply a data-driven approach 
 pip install -r requirements.txt
 ```
 
-3) Obtain an Elsevier API Key from the [Elsevier Developer Portal](https://dev.elsevier.com/). For some Elsevier APIs used in the project, additional approval from the Elsevier team is needed, which can take up to a week. If you intend to run this code, please contact [Jaden Pinto](mailto:jcp11@aber.ac.uk) who will share his API key.
+3) Obtain an Elsevier API Key from the [Elsevier Developer Portal](https://dev.elsevier.com/). For some Elsevier APIs used in the project, additional approval from the Elsevier team is needed, which can take up to a week.
 
 
 4) Create a `.env` file in the project root directory to store your Elsevier API key:
